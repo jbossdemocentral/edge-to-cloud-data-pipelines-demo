@@ -59,7 +59,7 @@ Follow instructions from this tutorial link:
 
 ### S3 Storage
 
-Pending definition
+For now, you can use an RHPDS instance of the Camel Workshop that includes an S3 Storage solution with ODF.
 
 <br>
 
@@ -100,7 +100,7 @@ curl -X POST -H "Content-Type: application/json" -d @- ${MY_ROUTE}/test
 ## Deploying to Openshift
 
 
-###Configure your integration with S3
+### Configure your integration with S3
 
 Follow the same steps indicated in the Camel Workshop
 
