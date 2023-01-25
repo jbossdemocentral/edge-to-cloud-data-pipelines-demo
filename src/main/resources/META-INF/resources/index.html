@@ -29,16 +29,24 @@
 
 <script>
 
-
 // const brokerHost = window.location.hostname
-const brokerHost = "mqtt-bmesegue-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com"
-const brokerPort = window.location.port 
+// const brokerHost = "mqtt-bmesegue-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com"
+const brokerHost = window.location.hostname.replace("camel-edge", "broker-amq-mqtt")
+var brokerPort = window.location.port 
 const brokerUrl=window.location.href+"/test"
+
+if (brokerPort == "8080"){
+	//this is for local testing
+	brokerPort = "1883"
+}
+else{
+	brokerPort = "80"
+}
 
 // Create a client instance
 // client = new Paho.MQTT.Client("localhost", Number("1883"), "CamelBrowserClient");
 // client = new Paho.MQTT.Client(brokerHost, Number("1883"), "CamelBrowserClient");
-client = new Paho.MQTT.Client(brokerHost, Number("80"), "CamelBrowserClient");
+client = new Paho.MQTT.Client(brokerHost, Number(brokerPort), "CamelBrowserClient");
 
 // set callback handlers
 // client.onConnectionLost = onConnectionLost;

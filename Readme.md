@@ -52,8 +52,13 @@ Follow instructions from this tutorial link:
 		-p AMQ_PASSWORD=admin
 		```
 
-  3. [optional] Create a route by exposing the MQTT service
-
+  3. Create a route by exposing the MQTT service \
+     You need to ensure the HTML page can access the broker remotely.
+	 ```
+	 oc expose service broker-amq-mqtt
+	 ```
+	 Make sure the route created has the `broker-amq-mqtt`.
+	 
 <br>
 
 

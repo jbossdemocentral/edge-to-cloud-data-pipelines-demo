@@ -78,9 +78,8 @@
  -->
 
         <!-- <to uri="https://object-detection-rest-bmesegue-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com/predictions"/> -->
-        <to uri="https://object-detection-rest:8080/predictions"/>
-
-
+        <!-- <to uri="https://object-detection-rest:8080/predictions"/> -->
+        <to uri="{{endpoint.detections.host}}/predictions"/>
 
         <log message="${body}"/>
 
@@ -88,21 +87,15 @@
             <jsonpath>$.detections[?(@.score>.8)].label</jsonpath>
         </setBody>
 
-<!--         <marshal>
-            <json/>
-        </unmarshal>
- -->
-
-
-<!--         <choice>
+        <choice>
             <when>
-                <simple>${body.length} > 0</simple>
-                <log message="HIGH SCORE: detected: ${body}"/>
+                <simple>${body.size} &gt; 0</simple>
+                <log message="OK"/>
             </when>
             <otherwise>
-                <log message="LOW SCORE: detected: ${body}"/>
+                <log message="FAILED"/>
             </otherwise>
-        </choice> -->
+        </choice>
 
         <log message="Detected: ${body}"/>
 
@@ -110,7 +103,7 @@
 
     <route id="mqtt-consumer">
         <!-- <from uri="paho:detection"/> -->
-        <from uri="paho:detection?brokerUrl=tcp://broker-amq-mqtt:1883"/>
+        <from uri="{{mqtt.uri}}"/>
         
         <!-- <log message="MQTT: ${body}"/> -->
         <log message="got MQTT image"/>
