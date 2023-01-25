@@ -53,9 +53,9 @@ Follow instructions from this tutorial link:
 		```
 
   3. Create a route by exposing the MQTT service \
-     You need to ensure the HTML page can access the broker remotely.
+     You need to ensure the HTML page can access the broker remotely via secure WebSockets.
 	 ```
-	 oc expose service broker-amq-mqtt
+	 oc create route edge broker-amq-mqtt --service broker-amq-mqtt
 	 ```
 	 Make sure the route created has the `broker-amq-mqtt`.
 
