@@ -35,12 +35,17 @@ const brokerHost = window.location.hostname.replace("camel-edge", "broker-amq-mq
 var brokerPort = window.location.port 
 const brokerUrl=window.location.href+"/test"
 
+var brokerOptions = null
+
 if (brokerPort == "8080"){
 	//this is for local testing
 	brokerPort = "1883"
+	brokerOptions = {onSuccess:onConnect}
 }
 else{
-	brokerPort = "80"
+	// brokerPort = "80"
+	brokerPort = "443"
+	brokerOptions = {useSSL:true,onSuccess:onConnect}
 }
 
 // Create a client instance
@@ -52,8 +57,25 @@ client = new Paho.MQTT.Client(brokerHost, Number(brokerPort), "CamelBrowserClien
 // client.onConnectionLost = onConnectionLost;
 // client.onMessageArrived = onMessageArrived;
 
+// var options = {         
+//             useSSL:true,
+//             // timeout: 3,
+//             userName:"admin",
+//             password:"admin",
+//             onSuccess: onConnect
+//          };
+
 // connect the client
-client.connect({onSuccess:onConnect});
+// client.connect({useSSL:true,onSuccess:onConnect});
+client.connect(brokerOptions);
+
+// var options = {         
+//             useSSL:true,
+//             timeout: 3,
+//             userName:"abc",
+//             password:"qweqwe",
+//             onSuccess: onConnect
+//          };
 
 
 // called when the client connects
@@ -75,7 +97,7 @@ function sendHttp(file) {
 
 
 		const Http = new XMLHttpRequest();
-		const url=window.location.href+"/test"
+		const url=window.location.href+"/detection"
 		// const url="http://localhost:8080/test"
 		Http.open("POST", url);
 		Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");

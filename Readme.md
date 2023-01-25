@@ -58,13 +58,14 @@ Follow instructions from this tutorial link:
 	 oc expose service broker-amq-mqtt
 	 ```
 	 Make sure the route created has the `broker-amq-mqtt`.
-	 
+
 <br>
 
 
 ### S3 Storage
 
-For now, you can use an RHPDS instance of the Camel Workshop that includes an S3 Storage solution with ODF.
+For now, you can use an RHPDS instance of the Camel Workshop that includes an S3 Storage solution with ODF. \
+Read the "Deployment" section below.
 
 <br>
 
@@ -97,7 +98,7 @@ To send a JSON message containing the image encoded in base64 use the following 
 MY_IMAGE=./images/small-dog.jpeg && \
 MY_ROUTE=http://localhost:8080 && \
 (echo -n '{"image": "'; base64 $MY_IMAGE; echo '"}') | \
-curl -X POST -H "Content-Type: application/json" -d @- ${MY_ROUTE}/test
+curl -X POST -H "Content-Type: application/json" -d @- ${MY_ROUTE}/detection
 ```
 
 <br>

@@ -19,7 +19,15 @@
         <log message="${body}"/>
     </route>
 
+    <!-- MQTT entry point -->
+    <route id="mqtt-consumer">
+        <from uri="{{mqtt.uri}}"/>
+        <log message="got MQTT image"/>
 
+        <to uri="direct:main"/>
+    </route>
+
+    <!-- Binary (HTTP) entry point -->
     <route id="binary">
         <from uri="platform-http:/binary"/>
         <log message="incoming BINARY payload"/>
@@ -32,25 +40,30 @@
             <simple>{ "image": "${body}"}</simple>
         </setBody>
 
-        <!-- <log message="b64 payload: ${body}"/> -->
+        <to uri="direct:main"/>
+        <!-- <convertBodyTo type="String"/> -->
+    </route>
+    
+    <!-- JSON (HTTP) entry point -->
+    <route id="http-consumer">
+        <from uri="platform-http:/detection"/>
+        <log message="incoming HTTP request"/>
+        <to uri="direct:main"/>
+        <to uri="direct:say-hello"/>
+    </route>
+    
+    <!-- MAIN PROCESSOR -->
+    <route id="main">
+        <from uri="direct:main"/>
+
         <to uri="direct:call"/>
-        <convertBodyTo type="String"/>
+        <to uri="direct:evaluate-detection"/>
+        <to uri="direct:store-image"/>
     </route>
 
-<!--     <route id="dummy1">
-        <from uri="platform-http:/test2"/>
-        <log message="incoming:\n${body}"/>
-    </route>
- -->
-    <route id="test">
-        <!-- <log message="incoming:\n${body}"/> -->
-
-
-        <from uri="platform-http:/test"/>
-
-        <log message="msg in"/>
-        <to uri="direct:call"/>
-
+    <!-- TEST HTTP RESPONSE -->
+    <route id="say-hello">
+        <from uri="direct:say-hello"/>
         <setHeader name="Access-Control-Allow-Origin">
             <constant>*</constant>
         </setHeader>
@@ -58,30 +71,29 @@
             <constant>text</constant>
         </setHeader>
         <setBody>
-            <!-- <simple>Hello Camel from ${routeId}</simple> -->
             <simple>Hello from Camel</simple>
         </setBody>
         <log message="${body}"/>
     </route>
 
 
-
     <route id="call">
         <from uri="direct:call"/>
-        <!-- <log message="incoming:\n${body}"/> -->
 
         <removeHeaders pattern="*"/>
 
-<!--         <setHeader name="Content-Type">
-            <constant>text</constant>
-        </setHeader>
- -->
+        <setProperty name="json-img">
+            <simple>${body}</simple>
+        </setProperty>
 
-        <!-- <to uri="https://object-detection-rest-bmesegue-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com/predictions"/> -->
-        <!-- <to uri="https://object-detection-rest:8080/predictions"/> -->
         <to uri="{{endpoint.detections.host}}/predictions"/>
 
         <log message="${body}"/>
+    </route>
+
+
+    <route id="evaluate-detection">
+        <from uri="direct:evaluate-detection"/>
 
         <setBody>
             <jsonpath>$.detections[?(@.score>.8)].label</jsonpath>
@@ -98,18 +110,45 @@
         </choice>
 
         <log message="Detected: ${body}"/>
-
     </route>
 
-    <route id="mqtt-consumer">
-        <!-- <from uri="paho:detection"/> -->
-        <from uri="{{mqtt.uri}}"/>
-        
-        <!-- <log message="MQTT: ${body}"/> -->
-        <log message="got MQTT image"/>
+    <!-- Store in S3 -->
+    <route id="store-image">
+        <from uri="direct:store-image"/>
+
+        <setBody>
+            <simple>${exchangeProperty.json-img}</simple>
+        </setBody>
+        <setBody>
+            <jsonpath>$.image</jsonpath>
+        </setBody>
+        <unmarshal><base64/></unmarshal>
 
 
-        <to uri="direct:call"/>
+
+        <!-- <choice>
+            <when>
+                <simple>'{{environment}}' == 'dev'</simple> -->
+                <setHeader name="CamelFileName">
+                    <simple>${date:now:yyyy-MM-dd_HH-mm-ssZ}.jpeg</simple>
+                </setHeader>        
+                <!-- <to uri="file:s3"/>
+            </when>
+            <otherwise> -->
+                <setHeader name="CamelAwsS3Key">
+                    <simple>${date:now:yyyy-MM-dd_HH-mm-ssZ}.jpeg</simple>
+                </setHeader>
+            
+                <setHeader name="CamelAwsS3ContentType">
+                    <simple>image/jpeg</simple>
+                </setHeader>
+            
+                <!-- <to uri="aws2-s3:images.bucket?{{camel.uri.s3.parameters}}"/> -->
+                <to uri="{{camel.uri.s3}}"/>
+            <!-- </otherwise>
+        </choice> -->
+
+        <log message="file stored"/>
 
     </route>
 
