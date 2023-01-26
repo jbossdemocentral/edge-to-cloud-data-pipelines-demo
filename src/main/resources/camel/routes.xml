@@ -58,6 +58,7 @@
 
         <to uri="direct:call"/>
         <to uri="direct:evaluate-detection"/>
+        <to uri="direct:price"/>
         <to uri="direct:store-image"/>
     </route>
 
@@ -114,9 +115,15 @@
             <when>
                 <simple>${body.size} &gt; 0</simple>
                 <log message="OK"/>
+                <setProperty name="bucket">
+                    <constant>valid</constant>
+                </setProperty>
             </when>
             <otherwise>
                 <log message="FAILED"/>
+                <setProperty name="bucket">
+                    <constant>train</constant>
+                </setProperty>
             </otherwise>
         </choice>
 
@@ -133,34 +140,56 @@
         <setBody>
             <jsonpath>$.image</jsonpath>
         </setBody>
-        <unmarshal><base64/></unmarshal>
+        <unmarshal>
+            <base64/>
+        </unmarshal>
 
+        <!-- File name for testing purposes -->
+        <setHeader name="CamelFileName">
+            <simple>${date:now:yyyy-MM-dd_HH-mm-ssZ}.jpeg</simple>
+        </setHeader>
 
-
-        <!-- <choice>
-            <when>
-                <simple>'{{environment}}' == 'dev'</simple> -->
-                <setHeader name="CamelFileName">
-                    <simple>${date:now:yyyy-MM-dd_HH-mm-ssZ}.jpeg</simple>
-                </setHeader>        
-                <!-- <to uri="file:s3"/>
-            </when>
-            <otherwise> -->
-                <setHeader name="CamelAwsS3Key">
-                    <simple>${date:now:yyyy-MM-dd_HH-mm-ssZ}.jpeg</simple>
-                </setHeader>
-            
-                <setHeader name="CamelAwsS3ContentType">
-                    <simple>image/jpeg</simple>
-                </setHeader>
-            
-                <!-- <to uri="aws2-s3:images.bucket?{{camel.uri.s3.parameters}}"/> -->
-                <to uri="{{camel.uri.s3}}"/>
-            <!-- </otherwise>
-        </choice> -->
-
+        <setHeader name="CamelAwsS3Key">
+            <simple>${date:now:yyyy-MM-dd_HH-mm-ssZ}.jpeg</simple>
+        </setHeader>
+    
+        <setHeader name="CamelAwsS3ContentType">
+            <simple>image/jpeg</simple>
+        </setHeader>
+    
+        <toD uri="{{camel.uri.s3}}"/>
         <log message="file stored"/>
+    </route>
 
+
+    <!-- Price simulator -->
+    <route id="price">
+        <from uri="direct:price"/>
+
+        <choice>
+            <when>
+                <simple>${body.size} &gt; 0</simple>
+                <log message="OK"/>
+                <setProperty name="item">
+                    <simple>${body[0]}</simple>
+                </setProperty>
+
+                <setBody>
+                    <simple>[{"item":"Simulation", "price":10},{"item":"Human face", "price":20}, {"item":"Airplane", "price":30}]</simple>
+                </setBody>
+
+                <setBody>
+                    <jsonpath>$[?(@.item == '${exchangeProperty.item}')].price</jsonpath>
+                </setBody>
+            </when>
+            <otherwise>
+                <setBody>
+                    <simple>not found</simple>
+                </setBody>
+            </otherwise>
+        </choice>
+
+        <log message="price: ${body}"/>
     </route>
 
 </routes>
