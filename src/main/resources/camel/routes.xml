@@ -86,7 +86,18 @@
             <simple>${body}</simple>
         </setProperty>
 
-        <to uri="{{endpoint.detections.host}}/predictions"/>
+
+        <choice>
+            <when>
+                <simple>{{backend.simulator}}</simple>
+                <setBody>
+                    <simple>{"detections": [{"label": "Simulation", "score": 9}]}</simple>
+                </setBody>
+            </when>
+            <otherwise>
+                <to uri="{{endpoint.detections.host}}/predictions"/>
+            </otherwise>
+        </choice>
 
         <log message="${body}"/>
     </route>
