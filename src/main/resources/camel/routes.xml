@@ -49,7 +49,7 @@
         <from uri="platform-http:/detection"/>
         <log message="incoming HTTP request"/>
         <to uri="direct:main"/>
-        <to uri="direct:say-hello"/>
+        <to uri="direct:prepare-response"/>
     </route>
     
     <!-- MAIN PROCESSOR -->
@@ -63,8 +63,8 @@
     </route>
 
     <!-- TEST HTTP RESPONSE -->
-    <route id="say-hello">
-        <from uri="direct:say-hello"/>
+    <route id="prepare-response">
+        <from uri="direct:prepare-response"/>
         <setHeader name="Access-Control-Allow-Origin">
             <constant>*</constant>
         </setHeader>
@@ -170,30 +170,44 @@
         <choice>
             <when>
                 <simple>${body.size} &gt; 0</simple>
-                <log message="OK"/>
-                <setProperty name="item">
+
+                <!-- keep item found -->
+                <setProperty name="article">
                     <simple>${body[0]}</simple>
                 </setProperty>
 
+                <removeHeaders pattern="*"/>
+                <setHeader name="item">
+                    <simple>${body[0]}</simple>
+                </setHeader>
                 <setBody>
+                    <constant></constant>
+                </setBody>
+                <to uri="{{endpoint.price.host}}/price"/>
+
+                <!-- <setBody>
                     <simple>[{"item":"Simulation", "price":10},{"item":"Human face", "price":20}, {"item":"Airplane", "price":3000000}]</simple>
                 </setBody>
 
                 <setBody>
                     <jsonpath>$[?(@.item == '${exchangeProperty.item}')].price</jsonpath>
-                </setBody>
+                </setBody> -->
             </when>
             <otherwise>
                 <setBody>
                     <simple>not found</simple>
                 </setBody>
+                <setProperty name="article">
+                    <simple>article not found</simple>
+                </setProperty>
+        
             </otherwise>
         </choice>
 
         <log message="price: ${body}"/>
 
         <setProperty name="pricetag">
-            <simple>price: ${body}</simple>
+            <simple>${exchangeProperty.article}: ${body}</simple>
         </setProperty>
 
     </route>

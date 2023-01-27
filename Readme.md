@@ -74,13 +74,14 @@ Go to the `price-engine` directory and from there run the following command:
 You can run locally with Camel JBang with the following command:
 
 ```
-camel run *
+camel run * --port 8090
 ```
 
 To deploy in OpenShift, run the following command:
 
 ```
-kamel run price-engine.xml --resource file:catalogue.json
+kamel run price-engine.xml \
+--resource file:catalogue.json
 ```
 
 You can test using the following cURL command:
