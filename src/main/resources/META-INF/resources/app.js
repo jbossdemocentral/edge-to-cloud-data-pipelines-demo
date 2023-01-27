@@ -92,6 +92,15 @@ function onConnect() {
     console.log("MQTT: connected to broker");
 }
 
+function onFailure(responseObject){
+
+    var status = document.querySelector("#mqtt-status");
+    status.style.color = 'red';
+
+    // Once a connection has been made, make a subscription and send a message.
+    console.log("MQTT: connection lost");
+}
+
 fileInput.onchange= function(event) {
 
 	// var image = document.getElementById('outputHttp');
@@ -136,8 +145,26 @@ function sendHttp(srcImage) {
     reduced = resizeImage(srcImage)
     Http.send(JSON.stringify({ "image": reduced.replace("data:image/jpeg;base64,", "")}));
 
-    Http.onreadystatechange = (e) => {
-      console.log(Http.responseText)
+    Http.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+          console.log(Http.responseText)
+
+        var tag = document.getElementById("price--tag")
+
+        tag.innerHTML = Http.responseText
+
+        tag.classList.add("fade-out")
+
+        var cleanfader=setInterval(removeFader, 5000);
+        function removeFader()
+        {
+            tag.classList.remove("fade-out")
+            // tag.style.opacity = 1
+            // alert("removing fader!");
+            clearInterval(cleanfader);
+        }
+
+    }
     }	
 }
 
@@ -148,6 +175,7 @@ function sendMqtt(srcImage) {
     message = new Paho.MQTT.Message(jsonMsg);
     message.destinationName = "detection";
     client.send(message);
+    console.log("MQTT message sent.")
 }
 
 
@@ -155,23 +183,26 @@ function sendMqtt(srcImage) {
 window.addEventListener("load", cameraStart, false);
 
 
-
-
-
-const brokerHost = window.location.hostname.replace("camel-edge", "broker-amq-mqtt")
+var brokerHost = window.location.hostname.replace("camel-edge", "broker-amq-mqtt")
 var brokerPort = window.location.port 
 const brokerUrl=window.location.href+"/test"
 
 var brokerOptions = null
 
+//For local testing: when loading the page directly on the browser
+if (brokerHost == ""){
+    brokerHost = "localhost"
+    brokerPort = "8080"
+}
+
+//For local testing
 if (brokerPort == "8080"){
-	//this is for local testing
 	brokerPort = "1883"
 	brokerOptions = {onSuccess:onConnect}
 }
 else{
 	brokerPort = "443"
-	brokerOptions = {useSSL:true,onSuccess:onConnect}
+	brokerOptions = {useSSL:true,onSuccess:onConnect, onFailure:onFailure}
 }
 
 // Create a client instance
@@ -183,3 +214,23 @@ client = new Paho.MQTT.Client(brokerHost, Number(brokerPort), "CamelBrowserClien
 
 // connect the client
 client.connect(brokerOptions);
+
+const interval = setInterval(function() {
+
+    // console.log("checking connectivity")
+    var status = document.querySelector("#mqtt-status");
+
+    if(client.isConnected()){
+        status.style.color = 'lightgreen';
+        status.parentElement.disabled=false
+    }
+    else{
+        status.style.color = 'red';
+        status.parentElement.disabled=true
+        //somehow this field is automatically created on first connect
+        //we need to remove it, otherwise it won't reconnect.
+        delete brokerOptions.mqttVersionExplicit
+        client.connect(brokerOptions);
+    }
+    // method to be executed;
+}, 1000);

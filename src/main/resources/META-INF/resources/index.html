@@ -35,9 +35,12 @@
 		    <button id="camera--trigger2" onclick="document.getElementById('fileInput').click();">Pick from Device</button>
 
 		    <!-- Camera trigger -->
-		    <button id="protocol--http" hidden>via HTTP</button>
-		    <button id="protocol--mqtt" hidden>via MQTT</button>
+		    <button id="protocol--http" hidden><small id="http-status" style="color:lightgreen;">⬤ &nbsp; &nbsp;</small>via HTTP</button>
+		    <button id="protocol--mqtt" hidden disabled><small id="mqtt-status" style="color:red;">⬤ &nbsp; &nbsp;</small>via MQTT</button>
 
+			<!-- <div > -->
+			<label id="price--tag" >hello</label>
+			<!-- </div> -->
 		</main>
 
 		<!-- Reference to your JavaScript file -->
