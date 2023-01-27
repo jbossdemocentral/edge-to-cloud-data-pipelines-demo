@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- camel-k: language=xml dependency=camel-language -->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://camel.apache.org/schema/spring"
+        xsi:schemaLocation="
+            http://camel.apache.org/schema/spring
+            https://camel.apache.org/schema/spring/camel-spring.xsd">
+
+	<!-- Write your routes here, for example: -->
+    <route id="main">
+        <from uri="platform-http:/price"/>
+        <to uri="language:constant:resource:classpath:catalogue.json"/>
+        <setBody>
+            <jsonpath>$[?(@.item == '${header.item}')].price</jsonpath>
+        </setBody>
+        <convertBodyTo type="String"/>
+    </route>
+
+</routes>

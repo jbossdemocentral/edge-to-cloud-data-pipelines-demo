@@ -5,9 +5,11 @@ This Camel Quarkus component integrates, MQTT and HTTP clients (such as IoT devi
 You'll need:
 
  - the REST AI/ML engine
+ - the REST Price engine (Camel K)
  - an AMQ Broker (local or remote)
+ - Camel K Operator
  - S3 storage provided by OpenShift Data Foundation
-
+ 
 <br>
 
 ### Deploy the AI/ML engine:
@@ -58,6 +60,36 @@ Follow instructions from this tutorial link:
 	 oc create route edge broker-amq-mqtt --service broker-amq-mqtt
 	 ```
 	 Make sure the route created has the `broker-amq-mqtt`.
+
+<br>
+
+
+### Deploy the Price engine
+
+The Camel Edge integration obtains detections from the inference engine, and requests a price match to the price engine.
+The price engine is a Camel K instance.
+
+Go to the `price-engine` directory and from there run the following command:
+
+You can run locally with Camel JBang with the following command:
+
+```
+camel run *
+```
+
+To deploy in OpenShift, run the following command:
+
+```
+kamel run price-engine.xml --resource file:catalogue.json
+```
+
+You can test using the following cURL command:
+
+```
+curl \
+-H "item: Apple" \
+http://price-engine-demo.apps.cluster-lv7nl.lv7nl.sandbox257.opentlc.com/price
+```
 
 <br>
 
