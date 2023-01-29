@@ -205,8 +205,11 @@ else{
 	brokerOptions = {useSSL:true,onSuccess:onConnect, onFailure:onFailure}
 }
 
+
+let uid = Date.now().toString(36) + Math.random().toString(36).substr(2)
+
 // Create a client instance
-client = new Paho.MQTT.Client(brokerHost, Number(brokerPort), "CameraClient");
+client = new Paho.MQTT.Client(brokerHost, Number(brokerPort), "CameraClient-"+uid);
 
 // set callback handlers
 // client.onConnectionLost = onConnectionLost;
