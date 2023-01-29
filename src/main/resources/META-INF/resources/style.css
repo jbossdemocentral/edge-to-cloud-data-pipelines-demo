@@ -30,6 +30,13 @@ html, body{
     position: fixed;
     bottom: 90px;
     left: calc(50% - 100px);
+    box-shadow: 0 5px #666;
+}
+
+#camera--trigger:active {
+  background-color: #3e8e41;
+  box-shadow: 0 2px #666;
+  transform: translateY(4px);
 }
 
 #camera--trigger2{
@@ -45,6 +52,13 @@ html, body{
     position: fixed;
     bottom: 30px;
     left: calc(50% - 100px);
+    box-shadow: 0 5px #666;
+}
+
+#camera--trigger2:active {
+  background-color: #3e8e41;
+  box-shadow: 0 2px #666;
+  transform: translateY(4px);
 }
 
 #protocol--http{
@@ -58,9 +72,15 @@ html, body{
     text-align: center;
     box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
     position: fixed;
-    top: 20px;
+    top: 15px;
     right: 150px;
-    /* left: calc(50% - 100px); */
+    box-shadow: 0 5px #666;
+}
+
+#protocol--http:active {
+  background-color: #3e8e41;
+  box-shadow: 0 2px #666;
+  transform: translateY(4px);
 }
 
 #protocol--mqtt{
@@ -74,21 +94,30 @@ html, body{
     text-align: center;
     box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
     position: fixed;
-    top: 80px;
+    top: 75px;
     right: 150px;
-    /* left: calc(50% - 100px); */
+    box-shadow: 0 5px #666;
+}
+
+#protocol--mqtt:active {
+  background-color: #3e8e41;
+  box-shadow: 0 2px #666;
+  transform: translateY(4px);
 }
 
 #protocol--mqtt:disabled{
   border: 1px solid #999999;
   background-color: #cccccc;
   color: #666666;
+  pointer-events: none;
 }
 
 #price--tag{
     width: 150px;
-    background-color: black;
-    color: white;
+    /* background-color: black;
+    color: white; */
+    background-color: white;
+    color: black;
     font-size: 16px;
     border-radius: 30px;
     border: none;

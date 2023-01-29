@@ -154,21 +154,27 @@ function onMessageArrived(msg){
       }
       
 
-      function sendMessage(item)
+      function sendMessage(protocol)
       {
         let scene = document.getElementById("scene");
 
         let process = {
-            origin: "mqtt",
+            // origin: "mqtt",
+            origin: protocol,
             valid: true,
             // valid: false,
             price: 500
         }
 
       //   consumeEvent(item)
-        consumeMqttEvent(item, process)
-       
-        num++
+        // consumeMqttEvent(item, process)
+
+        if(protocol == "mqtt")
+          consumeMqttEvent("T", process)
+        else if(protocol == "http")
+          consumeHttpEvent("T", process)
+        
+          num++
       }
 
 
@@ -572,7 +578,8 @@ function onMessageArrived(msg){
 
         msg = document.createElement('a-image')
         // msg.setAttribute('position', {x: -8, y: posY, z: 0})
-        msg.setAttribute('position', {x: 1.5, y: 3, z: 0})
+        // msg.setAttribute('position', {x: 1.5, y: 3, z: 0})
+        msg.setAttribute('position', {x: 2, y: 3, z: 0})
 
         if(process.valid){
             msg.setAttribute('src', "#valid")
@@ -581,7 +588,7 @@ function onMessageArrived(msg){
             msg.setAttribute('src', "#invalid")
         }
         
-        msg.setAttribute('scale', ".5 .5 .5")
+        msg.setAttribute('scale', ".8 .8 .8")
 
         var number = document.createElement('a-text')
         // number.setAttribute('value', item)
@@ -612,13 +619,27 @@ function onMessageArrived(msg){
         msg.setAttribute(
             'animation',
             // {  property: 'position', 
-            {  property: 'scale', 
+            // {  property: 'scale', 
+            {  property: 'opacity', 
                dur: '2000', 
                delay: 0, 
-               to: target,
+              //  to: target,
+              from: 1,
+              to: 0,
                easing: 'easeOutQuad'
             });
        
+            //text label child
+            msg.firstChild.setAttribute(
+              'animation',
+              {  property: 'opacity', 
+                 dur: '2000', 
+                 delay: 0, 
+                from: 1,
+                to: 0,
+                 easing: 'easeOutQuad'
+              });
+
           
           //listens animation end
           msg.addEventListener('animationcomplete', function cleanAnimation(evt) {
@@ -722,13 +743,14 @@ function onMessageArrived(msg){
         // msg.setAttribute('position', {x: -8, y: posY, z: 0})
         msg.setAttribute('position', {x: .5, y: -3, z: 0})
         // msg.setAttribute('src', "#valid")
-        msg.setAttribute('scale', ".5 .5 .5")
+        // msg.setAttribute('scale', ".5 .5 .5")
 
         var number = document.createElement('a-text')
         // number.setAttribute('value', item)
         number.setAttribute('value', "$"+process.price)
         number.setAttribute('position', {x: 0.5, y: 0, z: 0})
         // number.setAttribute('align', 'center')
+        number.setAttribute('color', "yellow")
         number.setAttribute('scale', "4 4 4")
         msg.appendChild(number);
         // number.setAttribute('position', {z: 0.148})
@@ -740,13 +762,25 @@ function onMessageArrived(msg){
         
         msg.setAttribute(
             'animation',
-            {  property: 'scale', 
+            // {  property: 'scale', 
+            {  property: 'opacity', 
                dur: '5000', 
                delay: 0, 
-               to: target,
+              //  to: target,
+              from: 1, to: 0,
                easing: 'easeOutQuad'
             });
        
+            //text label child
+            msg.firstChild.setAttribute(
+              'animation',
+              {  property: 'opacity', 
+                 dur: '2000', 
+                 delay: 0, 
+                from: 1,
+                to: 0,
+                 easing: 'easeOutQuad'
+              });
           
           //listens animation end
           msg.addEventListener('animationcomplete', function cleanAnimation(evt) {

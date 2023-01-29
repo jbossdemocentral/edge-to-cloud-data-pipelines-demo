@@ -6,7 +6,7 @@
       .button {
         padding: 5px 15px;
         font-size: 24px;
-          width: 100%;
+        width: 80%;
         cursor: pointer;
         text-align: center;
         /*text-decoration: none;*/
@@ -43,8 +43,13 @@
 
       .producer {
         left: 20px;
+        top: 10px;
       }  
 
+      .producer2 {
+        left: 20px;
+        top: 60px;
+      } 
 /*       .new-event {
         left: 20px;
         top: 70px;
@@ -79,51 +84,12 @@
         initMqtt()
 
           var scene = document.getElementById("scene");
-
           startConsumer()
           
           let stream = [1,2,3,4,5,6,7,8,9,10]
-
           num = 11
         }
 
-      
-        // function messageEvent(scene, posX, delay, num, posY)
-        // {
-        //   posY = posY || 0;
-                  
-        //   var msg;
-        
-        //   msg = document.createElement('a-box')
-        //   msg.setAttribute('position', {x: -10, y: posY, z: 0})
-        //   msg.setAttribute('height', .5)
-        //   msg.setAttribute('width' , .5)
-        //   msg.setAttribute('depth' , .2)
-        //   msg.setAttribute('side', "double")
-        //   msg.setAttribute('color', "red")
-          
-        //   var number = document.createElement('a-text')
-        //   number.setAttribute('value', num)
-        //   number.setAttribute('align', 'center')
-        //   number.setAttribute('scale', "2 2 2")
-        //   msg.appendChild(number);
-        //   number.setAttribute('position', {z: 0.100001})
-       
-        //   let target = {  x: posX,
-        //                   y: posY, 
-        //                   z: 0}
-          
-        //   msg.setAttribute(
-        //       'animation',
-        //       {  property: 'position', 
-        //          dur: '1000', 
-        //          delay: delay, 
-        //          to: target,
-        //          easing: 'easeOutQuad'
-        //       });
-          
-        //   scene.appendChild(msg);        
-        // }
       
     </script>
   </head>
@@ -131,7 +97,8 @@
 <!--   <body o> -->
     
 
-      <p class="producer timer"><button class="button"  onclick="sendMessage('T')">MQTT event</button></p>
+      <p class="producer timer"><button class="button" onclick="sendMessage('mqtt')">test MQTT</button></p>
+      <p class="producer2 timer"><button class="button" onclick="sendMessage('http')">test HTTP</button></p>
 
 
 <!-- 
@@ -153,12 +120,13 @@
           </a-assets>
         
           <!-- Using the asset management system. -->
-          <a-image src="#iot-camera" position="-8 2 0">
-            <a-text position="0 .8 0" value="IoT Camera" align="center" scale="1.5 1.5 1.5"></a-text>
+          <a-image src="#iot-camera" position="-8 2 0" scale="2 2 2">
+            <a-text position="0 .4 0" value="IoT Camera" align="center" scale=".75 .75 .75"></a-text>
             <!-- <a-box color="white" depth=".1" height=".5" width="0.5"></a-box> -->
           </a-image>
-          <a-image src="#device" position="-8 0 0"  width="1.33" height="1">
-            <a-text position="0 .8 0" value="Device" align="center" scale="2 2 2"></a-text>
+          <!-- <a-image src="#device" position="-8 0 0"  width="1.33" height="1"> -->
+            <a-image src="#device" position="-8 0 0">
+            <a-text position="0 -.8 0" value="Device" align="center" scale="1.5 1.5 1.5"></a-text>
           </a-image>
           <a-image src="#mqtt-broker" position="-3.4 2 0">
             <a-text position="0 .8 0" value="MQTT Broker" align="center" scale="1.5 1.5 1.5"></a-text>
