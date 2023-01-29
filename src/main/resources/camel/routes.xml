@@ -24,6 +24,10 @@
         <from uri="{{mqtt.uri}}"/>
         <log message="got MQTT image"/>
 
+        <setProperty name="job-origin">
+            <constant>"origin":"mqtt"</constant>
+        </setProperty>
+
         <to uri="direct:main"/>
     </route>
 
@@ -31,6 +35,11 @@
     <route id="binary">
         <from uri="platform-http:/binary"/>
         <log message="incoming BINARY payload"/>
+
+
+        <setProperty name="job-origin">
+            <constant>"origin":"http"</constant>
+        </setProperty>
 
         <marshal>
             <base64 lineLength="1"/>
@@ -48,6 +57,9 @@
     <route id="http-consumer">
         <from uri="platform-http:/detection"/>
         <log message="incoming HTTP request"/>
+        <setProperty name="job-origin">
+            <constant>"origin":"http"</constant>
+        </setProperty>
         <to uri="direct:main"/>
         <to uri="direct:prepare-response"/>
     </route>
@@ -59,6 +71,7 @@
         <to uri="direct:call"/>
         <to uri="direct:evaluate-detection"/>
         <to uri="direct:price"/>
+        <wireTap uri="direct:monitor"/>
         <to uri="direct:store-image"/>
     </route>
 
@@ -93,7 +106,7 @@
             <when>
                 <simple>{{backend.simulator}}</simple>
                 <setBody>
-                    <simple>{"detections": [{"label": "Simulation", "score": 9}]}</simple>
+                    <simple>{"detections": [{"label": "Simulation", "score": 0.6}]}</simple>
                 </setBody>
             </when>
             <otherwise>
@@ -112,16 +125,25 @@
             <jsonpath>$.detections[?(@.score>{{score.accuracy}})].label</jsonpath>
         </setBody>
 
+        <log message="accuracy: {{score.accuracy}}"/>
+        <log message="result detection: ${body}"/>
+
         <choice>
             <when>
                 <simple>${body.size} &gt; 0</simple>
                 <log message="OK"/>
+                <setProperty name="job-valid">
+                    <constant>"valid":true</constant>
+                </setProperty>
                 <setProperty name="bucket">
                     <constant>valid</constant>
                 </setProperty>
             </when>
             <otherwise>
                 <log message="FAILED"/>
+                <setProperty name="job-valid">
+                    <constant>"valid":false</constant>
+                </setProperty>
                 <setProperty name="bucket">
                     <constant>train</constant>
                 </setProperty>
@@ -210,6 +232,30 @@
             <simple>${exchangeProperty.article}: ${body}</simple>
         </setProperty>
 
+        <setProperty name="job-price">
+            <simple>"price":"${body}"</simple>
+        </setProperty>
+    </route>
+
+
+	<!-- Write your routes here, for example: -->
+    <!-- <route id="monitor">
+        <from uri="timer:monitor"/>
+        <setBody>
+            <simple>Hello Camel from ${routeId}</simple>
+        </setBody>
+        <log message="sending monitor MQTT message"/>
+        <to uri="{{mqtt.uri.monitor}}"/>
+    </route> -->
+
+    <route>
+        <from uri="direct:monitor"/>
+
+        <setBody>
+            <simple>{${exchangeProperty.job-origin},${exchangeProperty.job-valid},${exchangeProperty.job-price}}</simple>
+        </setBody>
+        <log message="sending monitor MQTT message: ${body}"/>
+        <to uri="{{mqtt.uri.monitor}}"/>
     </route>
 
 </routes>

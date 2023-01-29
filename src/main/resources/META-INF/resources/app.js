@@ -206,7 +206,7 @@ else{
 }
 
 // Create a client instance
-client = new Paho.MQTT.Client(brokerHost, Number(brokerPort), "CamelBrowserClient");
+client = new Paho.MQTT.Client(brokerHost, Number(brokerPort), "CameraClient");
 
 // set callback handlers
 // client.onConnectionLost = onConnectionLost;
