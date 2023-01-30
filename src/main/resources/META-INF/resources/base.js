@@ -76,12 +76,15 @@ function onMessageArrived(msg){
 
         // sendMessage('T')
 
-        consumeMqttEvent("1", process)
+        // consumeMqttEvent("1", process)
+        consumeMqttEvent(num, process)
     }
     else{
-        consumeHttpEvent("1", process)
+        // consumeHttpEvent("1", process)
+        consumeHttpEvent(num, process)
     }
 
+    num++
 }
 
 
@@ -170,11 +173,11 @@ function onMessageArrived(msg){
         // consumeMqttEvent(item, process)
 
         if(protocol == "mqtt")
-          consumeMqttEvent("T", process)
+          consumeMqttEvent(num, process)
         else if(protocol == "http")
-          consumeHttpEvent("T", process)
+          consumeHttpEvent(num, process)
         
-          num++
+        num++
       }
 
 
@@ -301,15 +304,16 @@ function onMessageArrived(msg){
         msg.setAttribute('side', "double")
         msg.setAttribute('color', "grey")
         // msg.setAttribute('opacity', ".9")
-        
+  
+
         var number = document.createElement('a-text')
-        // number.setAttribute('value', item)
-        number.setAttribute('value', "1")
+        number.setAttribute('value', item)
+        // number.setAttribute('value', "1")
         number.setAttribute('align', 'center')
         number.setAttribute('scale', "2 2 2")
         msg.appendChild(number);
         number.setAttribute('position', {z: 0.148})
-     
+
         let target = {  x: -4+.6,
                         // y: posY, 
                         y: 2, 
@@ -428,15 +432,16 @@ function onMessageArrived(msg){
         msg.setAttribute('side', "double")
         msg.setAttribute('color', "grey")
         // msg.setAttribute('opacity', ".9")
-        
+
+
         var number = document.createElement('a-text')
-        // number.setAttribute('value', item)
-        number.setAttribute('value', "1")
+        number.setAttribute('value', item)
+        // number.setAttribute('value', "1")
         number.setAttribute('align', 'center')
         number.setAttribute('scale', "2 2 2")
         msg.appendChild(number);
         number.setAttribute('position', {z: 0.148})
-     
+
         let target = {  x: -4+.6,
                         // y: posY, 
                         y: 0, 
@@ -514,10 +519,11 @@ function onMessageArrived(msg){
         msg.setAttribute('color', "grey")
         // msg.setAttribute('color', "red")
         // msg.setAttribute('opacity', ".9")
-        
+
+
         var number = document.createElement('a-text')
-        // number.setAttribute('value', item)
-        number.setAttribute('value', "2")
+        number.setAttribute('value', item)
+        // number.setAttribute('value', "2")
         number.setAttribute('align', 'center')
         number.setAttribute('scale', "2 2 2")
         msg.appendChild(number);
@@ -682,15 +688,16 @@ function onMessageArrived(msg){
         msg.setAttribute('side', "double")
         msg.setAttribute('color', "grey")
         // msg.setAttribute('opacity', ".9")
+
         
         var number = document.createElement('a-text')
-        // number.setAttribute('value', item)
-        number.setAttribute('value', "2")
+        number.setAttribute('value', item)
+        // number.setAttribute('value', "2")
         number.setAttribute('align', 'center')
         number.setAttribute('scale', "2 2 2")
         msg.appendChild(number);
         number.setAttribute('position', {z: 0.148})
-     
+    
         let target = {  x: 0,
                         // y: posY, 
                         y: -3, 
@@ -812,7 +819,7 @@ function onMessageArrived(msg){
         posY = 0;
         // var msg;
    
-        msg.firstChild.setAttribute('value', "3")
+        // msg.firstChild.setAttribute('value', "3")
         
             let from = {  x: 0,
                             y: 0, 
