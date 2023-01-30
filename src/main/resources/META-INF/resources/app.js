@@ -2,6 +2,13 @@
 var constraints = { video: { facingMode: "user" }, audio: false };
 var track = null;
 
+//MQTT client Unique ID
+let uid = Date.now().toString(36) + Math.random().toString(36).substr(2)
+let mqttTopic         = "detection/" + uid;
+let mqttTopicResponse =  "response/"+mqttTopic;
+
+let clientMqtt;
+
 // Define constants
 const cameraView = document.querySelector("#camera--view"),
     cameraOutput = document.querySelector("#camera--output"),
@@ -86,20 +93,39 @@ btnMqtt.onclick = function() {
     sendMqtt(cameraOutput.src)
 };
 
+
 // called when the MQTT client connects
 function onConnect() {
-    // Once a connection has been made, make a subscription and send a message.
     console.log("MQTT: connected to broker");
+    clientMqtt.onMessageArrived = onMessageArrived;
+    clientMqtt.subscribe(mqttTopicResponse, 1);
+}
+
+function onConnectionLost(responseObject){
+    console.log("MQTT: connection lost");
 }
 
 function onFailure(responseObject){
-
-    var status = document.querySelector("#mqtt-status");
-    status.style.color = 'red';
-
-    // Once a connection has been made, make a subscription and send a message.
-    console.log("MQTT: connection lost");
+    console.log("MQTT: failure");
 }
+
+function onMessageArrived(msg){
+    console.log("MQTT message: "+msg.payloadString);
+
+    let process = JSON.parse(msg.payloadString)
+
+    // let process = {
+    //     origin: "mqtt",
+    //     valid: true,
+    //     // valid: false,
+    //     price: 500
+    // }
+
+    console.log("MQTT message: "+process.origin);
+
+    displayPrice(process.item+": "+process.price)
+}
+
 
 fileInput.onchange= function(event) {
 
@@ -146,26 +172,25 @@ function sendHttp(srcImage) {
     Http.send(JSON.stringify({ "image": reduced.replace("data:image/jpeg;base64,", "")}));
 
     Http.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-          console.log(Http.responseText)
-
-        var tag = document.getElementById("price--tag")
-
-        tag.innerHTML = Http.responseText
-
-        tag.classList.add("fade-out")
-
-        var cleanfader=setInterval(removeFader, 5000);
-        function removeFader()
-        {
-            tag.classList.remove("fade-out")
-            // tag.style.opacity = 1
-            // alert("removing fader!");
-            clearInterval(cleanfader);
+        if (this.readyState == 4 && this.status == 200) {
+            console.log(Http.responseText)
+            displayPrice(Http.responseText)
         }
-
-    }
     }	
+}
+
+function displayPrice(price){
+
+    var tag = document.getElementById("price--tag")
+    tag.innerHTML = price
+    tag.classList.add("fade-out")
+
+    var cleanfader=setInterval(removeFader, 5000);
+    function removeFader()
+    {
+        tag.classList.remove("fade-out")
+        clearInterval(cleanfader);
+    }
 }
 
 function sendMqtt(srcImage) {
@@ -173,8 +198,9 @@ function sendMqtt(srcImage) {
     // jsonMsg = JSON.stringify({ "image": srcImage.replace("data:image/jpeg;base64,", "")})
     jsonMsg = JSON.stringify({ "image": reduced.replace("data:image/jpeg;base64,", "")})
     message = new Paho.MQTT.Message(jsonMsg);
-    message.destinationName = "detection";
-    client.send(message);
+    // message.destinationName = "detection/"+uid;
+    message.destinationName = mqttTopic;
+    clientMqtt.send(message);
     console.log("MQTT message sent.")
 }
 
@@ -206,24 +232,24 @@ else{
 }
 
 
-let uid = Date.now().toString(36) + Math.random().toString(36).substr(2)
+// let uid = Date.now().toString(36) + Math.random().toString(36).substr(2)
 
 // Create a client instance
-client = new Paho.MQTT.Client(brokerHost, Number(brokerPort), "CameraClient-"+uid);
+clientMqtt = new Paho.MQTT.Client(brokerHost, Number(brokerPort), "CameraClient-"+uid);
 
 // set callback handlers
 // client.onConnectionLost = onConnectionLost;
 // client.onMessageArrived = onMessageArrived;
 
 // connect the client
-client.connect(brokerOptions);
+clientMqtt.connect(brokerOptions);
 
 const interval = setInterval(function() {
 
     // console.log("checking connectivity")
     var status = document.querySelector("#mqtt-status");
 
-    if(client.isConnected()){
+    if(clientMqtt.isConnected()){
         status.style.color = 'lightgreen';
         status.parentElement.disabled=false
     }
@@ -233,7 +259,7 @@ const interval = setInterval(function() {
         //somehow this field is automatically created on first connect
         //we need to remove it, otherwise it won't reconnect.
         delete brokerOptions.mqttVersionExplicit
-        client.connect(brokerOptions);
+        clientMqtt.connect(brokerOptions);
     }
     // method to be executed;
 }, 1000);

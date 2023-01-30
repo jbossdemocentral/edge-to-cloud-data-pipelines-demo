@@ -22,7 +22,12 @@
     <!-- MQTT entry point -->
     <route id="mqtt-consumer">
         <from uri="{{mqtt.uri}}"/>
-        <log message="got MQTT image"/>
+        <log message="got MQTT image from: ${header.CamelMqttTopic}"/>
+
+        <setProperty name="topic-response">
+            <simple>response/${header.CamelMqttTopic}</simple>
+        </setProperty>
+        <log message="MQTT client: ${exchangeProperty.mqtt-client}"/>
 
         <setProperty name="job-origin">
             <constant>"origin":"mqtt"</constant>
@@ -71,7 +76,7 @@
         <to uri="direct:call"/>
         <to uri="direct:evaluate-detection"/>
         <to uri="direct:price"/>
-        <wireTap uri="direct:monitor"/>
+        <wireTap uri="direct:mqtt-publish"/>
         <to uri="direct:store-image"/>
     </route>
 
@@ -106,7 +111,7 @@
             <when>
                 <simple>{{backend.simulator}}</simple>
                 <setBody>
-                    <simple>{"detections": [{"label": "Simulation", "score": 0.6}]}</simple>
+                    <simple>{"detections": [{"label": "Simulation", "score": 0.8}]}</simple>
                 </setBody>
             </when>
             <otherwise>
@@ -232,6 +237,10 @@
             <simple>${exchangeProperty.article}: ${body}</simple>
         </setProperty>
 
+        <setProperty name="job-item">
+            <simple>"item":"${exchangeProperty.article}"</simple>
+        </setProperty>
+
         <setProperty name="job-price">
             <simple>"price":"${body}"</simple>
         </setProperty>
@@ -249,13 +258,24 @@
     </route> -->
 
     <route>
-        <from uri="direct:monitor"/>
+        <from uri="direct:mqtt-publish"/>
 
         <setBody>
-            <simple>{${exchangeProperty.job-origin},${exchangeProperty.job-valid},${exchangeProperty.job-price}}</simple>
+            <simple>{${exchangeProperty.job-origin},${exchangeProperty.job-valid},${exchangeProperty.job-item},${exchangeProperty.job-price}}</simple>
         </setBody>
+
         <log message="sending monitor MQTT message: ${body}"/>
         <to uri="{{mqtt.uri.monitor}}"/>
+
+        <!-- if client is MQTT we send we respond back -->
+        <when>
+            <simple>${exchangeProperty.topic-response} != null</simple>
+            <setHeader name="CamelPahoOverrideTopic">
+                <simple>${exchangeProperty.topic-response}</simple>
+            </setHeader>
+            <log message="sending MQTT response to: {exchangeProperty.topic-response}"/>
+            <to uri="{{mqtt.uri.monitor}}"/>
+        </when>
     </route>
 
 </routes>
