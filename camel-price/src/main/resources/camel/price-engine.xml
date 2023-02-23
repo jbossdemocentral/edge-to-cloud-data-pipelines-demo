@@ -9,10 +9,11 @@
 
 	<!-- Write your routes here, for example: -->
     <route id="main">
-        <from uri="platform-http:/price"/>
-        <to uri="language:constant:resource:classpath:catalogue.json"/>
+        <from uri="platform-http:/price?"/>
+        <to uri="language:constant:resource:classpath:catalog.json"/>
         <setBody>
-            <jsonpath>$[?(@.item == '${header.item}')].price</jsonpath>
+            <!-- resultType required for native mode-->
+            <jsonpath resultType="java.util.ArrayList">$[?(@.item =~ /${header.item}/i)].price</jsonpath>
         </setBody>
         <when>
             <simple>${body.size} &gt; 0</simple>
