@@ -1,0 +1,19 @@
+---
+- name: Evaluate edge namespace if not exists
+  k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ edge_namespace | default('edge') }}"
+    state: present
+
+- name: Evaluate AMQ Broker instance
+  k8s:
+    namespace: "{{ edge_namespace | default('edge') }}"
+    state: present
+    resource_definition: "{{ lookup('template', 'edge-broker.yaml.j2') }}"
+
+- name: Evaluate AMQ Streams instance
+  k8s:
+    namespace: "{{ edge_namespace | default('edge') }}"
+    state: present
+    resource_definition: "{{ lookup('template', 'edge-kafka.yaml.j2') }}"

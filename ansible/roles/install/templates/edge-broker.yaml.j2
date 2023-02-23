@@ -1,0 +1,23 @@
+---
+apiVersion: broker.amq.io/v1beta1
+kind: ActiveMQArtemis
+metadata:
+  name: edge
+  application: edge-broker
+spec:
+  adminPassword: openshift
+  adminUser: user
+  console:
+    expose: true  
+  deploymentPlan:
+    image: placeholder
+    size: 1
+  acceptors:
+    - name: amqp
+      protocols: amqp
+      port: 5672
+      expose: true
+    - name: mqtt
+      protocols: mqtt
+      port: 1883
+      expose: true

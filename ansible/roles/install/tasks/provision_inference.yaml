@@ -1,0 +1,13 @@
+---
+- name: Evaluate edge namespace if not exists
+  k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ edge_namespace | default('edge') }}"
+    state: present
+
+- name: Evaluate Inference model deployment
+  k8s:
+    namespace: "{{ edge_namespace | default('edge') }}"
+    state: present
+    resource_definition: "{{ lookup('template', 'inference-deployment.yaml.j2') }}"

@@ -1,0 +1,37 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: edge
+  namespace: kafka
+spec:
+  kafka:
+    replicas: 1
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+      - name: tls
+        port: 9093
+        type: route
+        tls: true
+        configuration:
+          bootstrap:
+            host: edge-kafka-bootstrap.127.0.0.1.nip.io
+          brokers:
+          - broker: 0
+            host: edge-kafka-0.127.0.0.1.nip.io
+    config:
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      default.replication.factor: 1
+      min.insync.replicas: 1
+      inter.broker.protocol.version: "3.3"
+    storage:
+      type: persistent-claim
+      size: 1Gi
+  zookeeper:
+    replicas: 1
+    storage:
+      type: ephemeral
