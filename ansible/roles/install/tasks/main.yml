@@ -28,3 +28,6 @@
 
 - name: Provision Object Detection
   ansible.builtin.include_tasks: provision_inference.yaml
+
+- name: Provision Camel Routes
+  ansible.builtin.include_tasks: provision_routes.yaml
