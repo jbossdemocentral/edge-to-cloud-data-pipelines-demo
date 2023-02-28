@@ -6,10 +6,30 @@ metadata:
   labels:
     app: noobaa
 spec:
-  cleanupPolicy: {}
+  cleanupPolicy:
+    allowNoobaaDeletion: true
+  defaultBackingStoreSpec:
+    type: pv-pool
+    pvPool:
+      numVolumes: 1
+      resources:
+        requests:
+          storage: 16Gi
+  dbResources: {}
+  dbType: postgres
+  dbVolumeResources:
+    requests:
+      storage: 1Gi
   endpoints:
     maxCount: 10
-    minCount: 3
+    minCount: 1
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 50m
+        memory: 256Mi
+  region: storage
   security:
     kms: {}
-  region: 'storage'
