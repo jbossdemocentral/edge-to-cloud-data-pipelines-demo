@@ -4,7 +4,7 @@ metadata:
   name: odf-operator
   namespace: {{ odf_project }}
 spec:
-  channel: stable-4.12
+  channel: "{{ subscription_versions_for_ocp[openshift_version].odf.channel }}" 
   installPlanApproval: Automatic
   name: odf-operator
   source: redhat-operators
