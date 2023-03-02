@@ -17,3 +17,24 @@
     namespace: "{{ edge_namespace | default('edge') }}"
     state: present
     resource_definition: "{{ lookup('template', 'edge-kafka.yaml.j2') }}"
+
+- name: Evaluate AMQ Broker MQTT route
+  k8s:
+    namespace: "{{ edge_namespace | default('edge') }}"
+    state: present
+    definition:
+      apiVersion: route.openshift.io/v1
+      kind: Route
+      metadata:
+        name: broker-amq-mqtt
+      spec:
+        host: broker-amq-mqtt.{{ route_subdomain }}
+        to:
+          kind: Service
+          name: edge-mqtt-0-svc
+          weight: 100
+        port:
+          targetPort: mqtt-0
+        tls:
+          termination: edge
+        wildcardPolicy: None

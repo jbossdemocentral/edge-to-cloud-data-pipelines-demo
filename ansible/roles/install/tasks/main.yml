@@ -1,4 +1,20 @@
 ---
+# Figure out paths
+- name: Get openshift console
+  set_fact:
+    console_url: "{{ query('kubernetes.core.k8s', api_version='config.openshift.io/v1', kind='Console', resource_name='cluster') | json_query('[0].status.consoleURL')  }}"
+
+- name: Get openshift domain
+  set_fact:
+    route_subdomain: "{{ query('kubernetes.core.k8s', api_version='operator.openshift.io/v1', kind='IngressController', resource_name='default', namespace='openshift-ingress-operator') | json_query('[0].status.domain')  }}"
+
+- name: debug
+  debug:
+    msg: 
+    - "Console URL: {{ console_url }}"
+    - "Route Subdomain: {{ route_subdomain }}"
+    - "Admin username: {{ ocp_username }}"
+
 - name: Fetch OpenShift cluster version
   set_fact:
     openshift_version: "{{ query('kubernetes.core.k8s', kind='ClusterOperator', resource_name='openshift-apiserver') | json_query('[0].status.versions[?name==`operator`].version | [0]') | split('.') | slice(2) | first | join('.') }}"
