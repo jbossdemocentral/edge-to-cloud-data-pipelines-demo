@@ -1,162 +1,56 @@
-## Prerequisites
+# Edge-to-Core Data Pipelines for AI/ML Demo
 
-This Camel Quarkus component integrates, MQTT and HTTP clients (such as IoT devices, handsets, 3rd party clients) with an AI/ML engine, to obtain detection results from images.
+The Edge to Core Data Pipelines for AI/ML solution pattern provides an architecture solution for scenarios in which edge devices generate image data, which must be collected,  processed, and stored at the edge before being utilized to train AI/ML  models at the core data center or cloud.
 
-You'll need:
+### Prerequisites
 
- - the REST AI/ML engine
- - the REST Price engine (Camel K)
- - an AMQ Broker (local or remote)
- - Camel K Operator
- - S3 storage provided by OpenShift Data Foundation
- 
-<br>
+This Camel Quarkus component combines MQTT and HTTP clients (such as IoT devices, cellphones, and third-party clients) with an AI/ML engine to obtain image detection results.
 
-### Deploy the AI/ML engine:
+You will require:
 
-Follow instructions from this tutorial link:
-- https://redhat-scholars.github.io/rhods-od-workshop/rhods-od-workshop/2-01-deploy-s2i.html#_openshift_console
+- An OpenShift Container Platform cluster running version 4.12 or above with Cluster Admin access.
 
-	Validate the deployment with:
+  You can obtain one by ordering from [Red Hat Demo Platform](https://demo.redhat.com/catalog?search=4.12) or deploying the trial version available at [Try Red Hat OpenShift](https://www.redhat.com/en/technologies/cloud-computing/openshift/try-it)
 
-	```
-	MY_IMAGE=./images/numberplate2.jpeg && \
-	MY_ROUTE=https://YOUR_ROUTE_URL/ && \
-	(echo -n '{"image": "'; base64 $MY_IMAGE; echo '"}') | curl -X POST -H "Content-Type: application/json" -d @- ${MY_ROUTE}/predictions
-	```
+- Docker is installed and running.
+  The ansible playbook that configures the environment is run using Docker and Linux container images in this demonstration. You should use the most recent Docker version. See the [Docker Engine installation documentation](https://docs.docker.com/engine/installation/) for further information. 
 
-<br>
+## Install the demo
 
-### Deploy the broker
+1. Clone [this](https://github.com/RedHat-Middleware-Workshops/camel-edge-rhte) GitHub repository:
 
-- Local broker \
-  Follow AMQ instructions to deploy a local instance.
+  ```sh
+  git clone https://github.com/hguerrero/edge-to-cloud-data-pipelines-demo.git
+  ```
 
-- on OpenShift \
-  You can use the AMQ operator to deploy an instance.
-  Or you can follow these instructions:
+2. Change to the Ansible directory.
 
-  1. Login with admin credentials and create a new project
-		```
-		oc new-project demo
-		```
+  ```sh
+  cd edge-to-cloud-data-pipelines-demo/ansible
+  ```
 
-  2. using the CLI:
-		```
-		oc replace --force -f \
-		https://raw.githubusercontent.com/jboss-container-images/jboss-amq-7-broker-openshift-image/74-7.4.0.GA/templates/amq-broker-74-basic.yaml
-		```
-	
-		```
-		oc new-app --template=amq-broker-74-basic \
-		-p AMQ_PROTOCOL=openwire,amqp,stomp,mqtt,hornetq \
-		-p AMQ_USER=admin \
-		-p AMQ_PASSWORD=admin
-		```
+3. Login into your OpenShift cluster from the `oc` command line.
 
-  3. Create a route by exposing the MQTT service \
-     You need to ensure the HTML page can access the broker remotely via secure WebSockets.
-	 ```
-	 oc create route edge broker-amq-mqtt --service broker-amq-mqtt
-	 ```
-	 Make sure the route created has the `broker-amq-mqtt`.
+  ```sh
+  KUBECONFIG=kube-demo
+  oc login --username=adminuser --server=https://(...):6443 --insecure-skip-tls-verify=true
+  ```
 
-<br>
+4. Set the cluster admin variable.
 
+  ```sh
+  OCP_USERNAME=<your_username>
+  ```
 
-### Deploy the Price engine
+5. Run the playbook
 
-The Camel Edge integration obtains detections from the inference engine, and requests a price match to the price engine.
-The price engine is a Camel K instance.
+  ```sh
+  docker run -i -t --rm --entrypoint /usr/local/bin/ansible-playbook \
+  		-v $PWD:/runner \
+  		-v $PWD/kube-demo:/home/runner/.kube/config \
+  		quay.io/agnosticd/ee-multicloud:v0.0.11  \
+  		-e="ocp_username=${OCP_USERNAME}" \
+  		./install.yaml
+  ```
 
-Go to the `price-engine` directory and from there run the following command:
-
-You can run locally with Camel JBang with the following command:
-
-```
-camel run * --port 8090
-```
-
-To deploy in OpenShift, run the following command:
-
-```
-kamel run price-engine.xml \
---resource file:catalogue.json
-```
-
-You can test using the following cURL command:
-
-```
-curl \
--H "item: Apple" \
-http://price-engine-demo.apps.cluster-lv7nl.lv7nl.sandbox257.opentlc.com/price
-```
-
-<br>
-
-
-### S3 Storage
-
-For now, you can use an RHPDS instance of the Camel Workshop that includes an S3 Storage solution with ODF. \
-Read the "Deployment" section below.
-
-<br>
-
-## Running the service
-
-
-Run it locally executing the command below:
-
-```
-./mvnw clean compile quarkus:dev
-```
-
-## Test with cURL
-
-### Binary mode
-
-To send an image in binary via HTTP, use the following `curl` command:
-
-```
-MY_IMAGE=./images/small-dog.jpeg && \
-MY_ROUTE=http://localhost:8080 && \
-curl -H 'Content-Type:application/octet-stream' ${MY_ROUTE}/binary --data-binary @${MY_IMAGE}
-```
-
-### JSON mode
-
-To send a JSON message containing the image encoded in base64 use the following `curl` command:
-
-```
-MY_IMAGE=./images/small-dog.jpeg && \
-MY_ROUTE=http://localhost:8080 && \
-(echo -n '{"image": "'; base64 $MY_IMAGE; echo '"}') | \
-curl -X POST -H "Content-Type: application/json" -d @- ${MY_ROUTE}/detection
-```
-
-<br>
-
-## Deploying to Openshift
-
-
-### Configure your integration with S3
-
-Follow the same steps indicated in the Camel Workshop
-
-Step 7:
- - https://github.com/RedHat-Middleware-Workshops/workshop-camel3/blob/main/docs/labs/stage5/walkthrough.adoc#deploy-in-openshift
-
-Configure:
- - `src/main/resources/application.properties`
-
-<br>
-
-### Deploy
-
-Ensure you create/switch-to the namespace where you want to deploy the stub.
-
-Run the following command to trigger the deployment:
-```
-./mvnw clean package -DskipTests -Dquarkus.kubernetes.deploy=true
-```
-
+  
