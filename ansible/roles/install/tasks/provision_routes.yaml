@@ -11,3 +11,9 @@
     namespace: "{{ edge_namespace | default('edge') }}"
     state: present
     resource_definition: "{{ lookup('template', 'camel-price-deployment.yaml.j2') }}"
+
+- name: Evaluate Camel Edge deployment
+  k8s:
+    namespace: "{{ edge_namespace | default('edge') }}"
+    state: present
+    resource_definition: "{{ lookup('template', 'camel-edge-deployment.yaml.j2') }}"
