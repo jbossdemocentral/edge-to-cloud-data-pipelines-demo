@@ -10,4 +10,7 @@ spec:
   name: amq-streams
   source: redhat-operators
   sourceNamespace: {{ snapshot_operator_project }}
-...
+  config:
+    env:
+      - name: STRIMZI_FEATURE_GATES
+        value: +UseKRaft 
