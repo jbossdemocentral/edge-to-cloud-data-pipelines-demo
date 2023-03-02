@@ -19,38 +19,40 @@ You will require:
 
 1. Clone [this](https://github.com/RedHat-Middleware-Workshops/camel-edge-rhte) GitHub repository:
 
-  ```sh
-  git clone https://github.com/hguerrero/edge-to-cloud-data-pipelines-demo.git
-  ```
+    ```sh
+    git clone https://github.com/hguerrero/edge-to-cloud-data-pipelines-demo.git
+    ```
 
 2. Change to the Ansible directory.
 
-  ```sh
-  cd edge-to-cloud-data-pipelines-demo/ansible
-  ```
+    ```sh
+    cd edge-to-cloud-data-pipelines-demo/ansible
+    ```
 
 3. Login into your OpenShift cluster from the `oc` command line.
 
-  ```sh
-  KUBECONFIG=kube-demo
-  oc login --username=adminuser --server=https://(...):6443 --insecure-skip-tls-verify=true
-  ```
+    ```sh
+    KUBECONFIG=kube-demo
+    oc login --username=adminuser --server=https://(...):6443 --insecure-skip-tls-verify=true
+    ```
+
+    Replace the `--server` url with your own cluster API endpoint.
 
 4. Set the cluster admin variable.
 
-  ```sh
-  OCP_USERNAME=<your_username>
-  ```
+    ```sh
+    OCP_USERNAME=<your_username>
+    ```
 
 5. Run the playbook
 
-  ```sh
-  docker run -i -t --rm --entrypoint /usr/local/bin/ansible-playbook \
-  		-v $PWD:/runner \
-  		-v $PWD/kube-demo:/home/runner/.kube/config \
-  		quay.io/agnosticd/ee-multicloud:v0.0.11  \
-  		-e="ocp_username=${OCP_USERNAME}" \
-  		./install.yaml
-  ```
+    ```sh
+    docker run -i -t --rm --entrypoint /usr/local/bin/ansible-playbook \
+        -v $PWD:/runner \
+        -v $PWD/kube-demo:/home/runner/.kube/config \
+        quay.io/agnosticd/ee-multicloud:v0.0.11  \
+        -e="ocp_username=${OCP_USERNAME}" \
+        ./install.yaml
+    ```
 
   
