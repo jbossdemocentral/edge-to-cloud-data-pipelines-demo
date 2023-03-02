@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- camel-k: language=xml -->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://camel.apache.org/schema/spring"
+        xsi:schemaLocation="
+            http://camel.apache.org/schema/spring
+            https://camel.apache.org/schema/spring/camel-spring.xsd">
+
+	<!-- Write your routes here, for example: -->
+    <route id="xml">
+        <from uri="timer:xml?repeatCount=1"/>
+
+        <!-- <to uri="direct:call"/> -->
+
+        <setBody>
+            <simple>Hello Camel from ${routeId}</simple>
+        </setBody>
+        <log message="${body}"/>
+    </route>
+
+    <!-- MQTT entry point -->
+    <route id="mqtt-consumer">
+        <from uri="{{mqtt.uri}}"/>
+        <log message="got MQTT image from: ${header.CamelMqttTopic}"/>
+
+        <setProperty name="topic-response">
+            <simple>response/${header.CamelMqttTopic}</simple>
+        </setProperty>
+        <log message="MQTT client: ${exchangeProperty.mqtt-client}"/>
+
+        <setProperty name="job-origin">
+            <constant>"origin":"mqtt"</constant>
+        </setProperty>
+
+        <to uri="direct:main"/>
+    </route>
+
+    <!-- Binary (HTTP) entry point -->
+    <route id="binary">
+        <from uri="platform-http:/binary"/>
+        <log message="incoming BINARY payload"/>
+
+
+        <setProperty name="job-origin">
+            <constant>"origin":"http"</constant>
+        </setProperty>
+
+        <marshal>
+            <base64 lineLength="1"/>
+        </marshal>
+
+        <setBody>
+            <simple>{ "image": "${body}"}</simple>
+        </setBody>
+
+        <to uri="direct:main"/>
+        <!-- <convertBodyTo type="String"/> -->
+    </route>
+    
+    <!-- JSON (HTTP) entry point -->
+    <route id="http-consumer">
+        <from uri="platform-http:/detection"/>
+        <log message="incoming HTTP request"/>
+        <setProperty name="job-origin">
+            <constant>"origin":"http"</constant>
+        </setProperty>
+        <to uri="direct:main"/>
+        <to uri="direct:prepare-response"/>
+    </route>
+    
+    <!-- MAIN PROCESSOR -->
+    <route id="main">
+        <from uri="direct:main"/>
+
+        <to uri="direct:call"/>
+        <to uri="direct:evaluate-detection"/>
+        <to uri="direct:price"/>
+        <wireTap uri="direct:mqtt-publish"/>
+        <to uri="direct:store-image"/>
+    </route>
+
+    <!-- TEST HTTP RESPONSE -->
+    <route id="prepare-response">
+        <from uri="direct:prepare-response"/>
+        <setHeader name="Access-Control-Allow-Origin">
+            <constant>*</constant>
+        </setHeader>
+        <setHeader name="Content-Type">
+            <constant>text</constant>
+        </setHeader>
+        <setBody>
+            <!-- <simple>Hello from Camel</simple> -->
+            <simple>${exchangeProperty.pricetag}</simple>
+        </setBody>
+        <log message="${body}"/>
+    </route>
+
+
+    <route id="call">
+        <from uri="direct:call"/>
+
+        <removeHeaders pattern="*"/>
+
+        <setProperty name="json-img">
+            <simple>${body}</simple>
+        </setProperty>
+
+
+        <choice>
+            <when>
+                <simple>{{backend.simulator}}</simple>
+                <setBody>
+                    <simple>{"detections": [{"label": "Simulation", "score": 0.8}]}</simple>
+                </setBody>
+            </when>
+            <otherwise>
+                <to uri="{{endpoint.detections.host}}/predictions"/>
+            </otherwise>
+        </choice>
+
+        <log message="${body}"/>
+    </route>
+
+
+    <route id="evaluate-detection">
+        <from uri="direct:evaluate-detection"/>
+
+        <setBody>
+            <jsonpath resultType="java.util.ArrayList">$.detections[?(@.score>{{score.accuracy}})].label</jsonpath>
+        </setBody>
+
+        <log message="accuracy: {{score.accuracy}}"/>
+        <log message="result detection: ${body}"/>
+
+        <choice>
+            <when>
+                <simple>${body.size} &gt; 0</simple>
+                <log message="OK"/>
+                <setProperty name="job-valid">
+                    <constant>"valid":true</constant>
+                </setProperty>
+                <setProperty name="bucket">
+                    <constant>valid</constant>
+                </setProperty>
+            </when>
+            <otherwise>
+                <log message="FAILED"/>
+                <setProperty name="job-valid">
+                    <constant>"valid":false</constant>
+                </setProperty>
+                <setProperty name="bucket">
+                    <constant>train</constant>
+                </setProperty>
+            </otherwise>
+        </choice>
+
+        <log message="Detected: ${body}"/>
+    </route>
+
+    <!-- Store in S3 -->
+    <route id="store-image">
+        <from uri="direct:store-image"/>
+
+        <setBody>
+            <simple>${exchangeProperty.json-img}</simple>
+        </setBody>
+        <setBody>
+            <jsonpath>$.image</jsonpath>
+        </setBody>
+        <unmarshal>
+            <base64/>
+        </unmarshal>
+
+        <!-- File name for testing purposes -->
+        <setHeader name="CamelFileName">
+            <simple>${date:now:yyyy-MM-dd_HH-mm-ssZ}.jpeg</simple>
+        </setHeader>
+
+        <setHeader name="CamelAwsS3Key">
+            <simple>${date:now:yyyy-MM-dd_HH-mm-ssZ}.jpeg</simple>
+        </setHeader>
+    
+        <setHeader name="CamelAwsS3ContentType">
+            <simple>image/jpeg</simple>
+        </setHeader>
+    
+        <toD uri="{{camel.uri.s3}}"/>
+        <log message="file stored"/>
+    </route>
+
+
+    <!-- Price simulator -->
+    <route id="price">
+        <from uri="direct:price"/>
+
+        <choice>
+            <when>
+                <simple>${body.size} &gt; 0</simple>
+
+                <!-- keep item found -->
+                <setProperty name="article">
+                    <simple>${body[0]}</simple>
+                </setProperty>
+
+                <removeHeaders pattern="*"/>
+                <setHeader name="item">
+                    <simple>${body[0]}</simple>
+                </setHeader>
+                <setBody>
+                    <constant></constant>
+                </setBody>
+                <to uri="{{endpoint.price.host}}/price"/>
+
+                <!-- <setBody>
+                    <simple>[{"item":"Simulation", "price":10},{"item":"Human face", "price":20}, {"item":"Airplane", "price":3000000}]</simple>
+                </setBody>
+
+                <setBody>
+                    <jsonpath>$[?(@.item == '${exchangeProperty.item}')].price</jsonpath>
+                </setBody> -->
+            </when>
+            <otherwise>
+                <setBody>
+                    <simple>not found</simple>
+                </setBody>
+                <setProperty name="article">
+                    <simple>article not found</simple>
+                </setProperty>
+        
+            </otherwise>
+        </choice>
+
+        <log message="price: ${body}"/>
+
+        <setProperty name="pricetag">
+            <simple>${exchangeProperty.article}: ${body}</simple>
+        </setProperty>
+
+        <setProperty name="job-item">
+            <simple>"item":"${exchangeProperty.article}"</simple>
+        </setProperty>
+
+        <setProperty name="job-price">
+            <simple>"price":"$${body}"</simple>
+        </setProperty>
+    </route>
+
+
+	<!-- Write your routes here, for example: -->
+    <!-- <route id="monitor">
+        <from uri="timer:monitor"/>
+        <setBody>
+            <simple>Hello Camel from ${routeId}</simple>
+        </setBody>
+        <log message="sending monitor MQTT message"/>
+        <to uri="{{mqtt.uri.monitor}}"/>
+    </route> -->
+
+    <route>
+        <from uri="direct:mqtt-publish"/>
+
+        <setBody>
+            <simple>{${exchangeProperty.job-origin},${exchangeProperty.job-valid},${exchangeProperty.job-item},${exchangeProperty.job-price}}</simple>
+        </setBody>
+
+        <log message="sending monitor MQTT message: ${body}"/>
+        <to uri="{{mqtt.uri.monitor}}"/>
+
+        <!-- if client is MQTT we respond back -->
+        <when>
+            <simple>${exchangeProperty.topic-response} != null</simple>
+            <setHeader name="CamelPahoOverrideTopic">
+                <simple>${exchangeProperty.topic-response}</simple>
+            </setHeader>
+            <log message="sending MQTT response to: {exchangeProperty.topic-response}"/>
+            <to uri="{{mqtt.uri.monitor}}"/>
+        </when>
+    </route>
+
+</routes>
