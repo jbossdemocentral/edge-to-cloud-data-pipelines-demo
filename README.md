@@ -29,22 +29,27 @@ You will require:
     cd edge-to-cloud-data-pipelines-demo/ansible
     ```
 
-3. Login into your OpenShift cluster from the `oc` command line.
+3. Set the cluster admin variable.
 
     ```sh
-    KUBECONFIG=kube-demo
-    oc login --username=adminuser --server=https://(...):6443 --insecure-skip-tls-verify=true
+    OCP_USERNAME=<your_admin_username>
+    ```
+
+4. Configure the `KUBECONFIG` file to use.
+
+    ```sh
+    export KUBECONFIG=./kube-demo
+    ```
+
+5. Login into your OpenShift cluster from the `oc` command line.
+
+    ```sh
+    oc login --username="${OCP_USERNAME}" --server=https://(...):6443 --insecure-skip-tls-verify=true
     ```
 
     Replace the `--server` url with your own cluster API endpoint.
 
-4. Set the cluster admin variable.
-
-    ```sh
-    OCP_USERNAME=<your_username>
-    ```
-
-5. Run the playbook
+6. Run the playbook
 
     ```sh
     docker run -i -t --rm --entrypoint /usr/local/bin/ansible-playbook \
