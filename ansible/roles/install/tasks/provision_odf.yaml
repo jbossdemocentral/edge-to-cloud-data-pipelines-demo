@@ -26,7 +26,7 @@
     namespace: "{{ odf_project }}"
     name: "noobaa-operator"
   register: r_noobaa_operator_deployment
-  retries: 20
+  retries: 100
   delay: 10
   until:
     - r_noobaa_operator_deployment.resources is defined
