@@ -51,13 +51,25 @@ You will require:
 
 6. Run the playbook
 
-    ```sh
-    docker run -i -t --rm --entrypoint /usr/local/bin/ansible-playbook \
-        -v $PWD:/runner \
-        -v $PWD/kube-demo:/home/runner/.kube/config \
-        quay.io/agnosticd/ee-multicloud:v0.0.11  \
-        -e="ocp_username=${OCP_USERNAME}" \
-        ./install.yaml
-    ```
+    1. With Docker:
 
-  
+        ```sh
+        docker run -i -t --rm --entrypoint /usr/local/bin/ansible-playbook \
+            -v $PWD:/runner \
+            -v $PWD/kube-demo:/home/runner/.kube/config \
+            quay.io/agnosticd/ee-multicloud:v0.0.11  \
+            -e="ocp_username=${OCP_USERNAME}" \
+            ./install.yaml
+        ```
+
+    2. With Podman:
+
+        ```sh
+        podman run -i -t --rm --entrypoint /usr/local/bin/ansible-playbook \
+            -v $PWD:/runner \
+            -v $PWD/kube-demo:/home/runner/.kube/config \
+            quay.io/agnosticd/ee-multicloud:v0.0.11  \
+            -e="ocp_username=${OCP_USERNAME}" \
+            ./install.yaml
+        ```
+
