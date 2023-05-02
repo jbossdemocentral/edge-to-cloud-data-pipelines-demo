@@ -51,8 +51,14 @@ You will require:
 
 6. Run the playbook
 
-    1. With Docker:
+    1. With Ansible (if you have it installed and configured):
 
+        ```sh
+        ansible-playbook -i inventory/openshift.yaml -e="ocp_username=${OCP_USERNAME}" ./install.yaml 
+        ```
+    
+    2. With Docker:
+    
         ```sh
         docker run -i -t --rm --entrypoint /usr/local/bin/ansible-playbook \
             -v $PWD:/runner \
@@ -61,9 +67,9 @@ You will require:
             -e="ocp_username=${OCP_USERNAME}" \
             ./install.yaml
         ```
-
-    2. With Podman:
-
+    
+    3. With Podman:
+    
         ```sh
         podman run -i -t --rm --entrypoint /usr/local/bin/ansible-playbook \
             -v $PWD:/runner \
