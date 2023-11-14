@@ -1,3 +1,4 @@
 s3*
+!s3*.png
 target
 **/.camel-jbang
