@@ -6,7 +6,9 @@ metadata:
   labels:
     app: point-of-sale
     app.kubernetes.io/part-of: pos
-    app.openshift.io/runtime: camel  
+    app.openshift.io/runtime: camel
+  annotations:
+    app.openshift.io/connects-to: edge-ss, camel-price, object-detection-rest
 spec:
   selector:
     matchLabels:
