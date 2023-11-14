@@ -79,3 +79,14 @@ You will require:
             ./install.yaml
         ```
 
+## Run the Demo
+
+### Explore the S3 buckets
+
+To check the content of the buckets we collected during the demo, you can use a simple file viewer like [filestash S3 Browser](https://www.filestash.app/s3-browser.html). 
+
+1. Expand the *Advanced* section.
+2. Use the external endpoint for S3 and the credentials from the NoobaaAcount.
+3. Click on *Connect*
+
+You will be able to browse through the buckets and check the images sent by the edge applications.
