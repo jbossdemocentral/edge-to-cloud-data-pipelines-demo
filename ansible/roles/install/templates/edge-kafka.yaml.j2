@@ -1,11 +1,32 @@
 ---
 apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: dual-role
+  labels:
+    strimzi.io/cluster: edge
+spec:
+  replicas: 1
+  roles:
+    - controller
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 1Gi
+        deleteClaim: false
+---
+apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
   name: edge
+  annotations:
+    strimzi.io/node-pools: enabled  
 spec:
   kafka:
-    version: 3.3.1
+    version: 3.5.0
     replicas: 1
     listeners:
       - name: plain
@@ -22,10 +43,14 @@ spec:
       transaction.state.log.min.isr: 1
       default.replication.factor: 1
       min.insync.replicas: 1
-      inter.broker.protocol.version: "3.3"
+      inter.broker.protocol.version: "3.5"
     storage:
-      type: persistent-claim
-      size: 1Gi
+      type: jbod
+      volumes:
+        - id: 0
+          type: persistent-claim
+          size: 1Gi
+          deleteClaim: false
   zookeeper:
     replicas: 1
     storage:
