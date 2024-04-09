@@ -1,0 +1,34 @@
+---
+name: modules
+title: Navigation
+version: master
+nav:
+  - modules/ROOT/nav.adoc
+
+asciidoc:
+  attributes:
+    lab_name: LB1495 Retail On The Edge - AI/ML And Application Services
+    release-version: master
+    page-pagination: true
+    my_var: "foo"
+    guid: my-guid
+    region: my-region
+    ssh_user: devops
+    ssh_password: devops
+    ssh_command: ssh devops@bastion.{guid}.example.opentlc.com
+    minio-user: minio
+    minio-pass: minio123
+    minio-endpoint: http://minio-service.{user}-lab1-apps.svc:9000
+    git-clone-repo-url: https://github.com/RedHat-Middleware-Workshops/edge-to-cloud-pipelines-workshop.git
+    git-clone-repo-branch: main
+    user: userX
+    password: openshift
+    openshift_cluster_ingress_domain: cluster-6qhg8.sandbox1440.opentlc.com
+    openshift_console_url: https://console-openshift-console.apps.{openshift_cluster_ingress_domain}/
+    rhoai_dashboard_url: https://rhods-dashboard-redhat-ods-applications.{openshift_cluster_ingress_domain}/
+    login_command: oc login --insecure-skip-tls-verify=false -u userX -p openshift https://api.{openshift_cluster_ingress_domain}:6443"    
+    page-links:
+    - url: https://redhat.com
+      text: Red Hat
+    - url: https://www.redhat.com/en/summit
+      text: Summit

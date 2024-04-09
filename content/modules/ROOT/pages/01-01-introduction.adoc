@@ -1,0 +1,27 @@
+= LB1495 Building Applications for The Edge
+
+== A Retail Odyssey with Red Hat OpenShift, AI/ML, and Red Hat Application Services
+
+=== Introduction
+OpenShift is an industry leading Application Platform that provides development and operations teams a powerful and secure platform for creating and deploying hybrid cloud solutions.
+
+Hybrid Cloud solutions, including Edge based capabilities, also require Application Services (middleware) and increasingly need artificial intelligence and machine learning (AI/ML) capabilities.
+
+=== Lab Scenario and Overview
+
+This lab is built around an "Art of The Possible" scenario in which a retail chain is looking to accelerate adding new products to their main "brick and mortar" stores.  They also want the capability for different locations and kiosks to be able to quickly onboard new products that are more regionally focused in interest, or better support niche markets.
+
+The business development group has asked the development and operations teams to come up with a way to quickly identify and price new merchandise that may come from niche vendors that operate outside of the historically centralized UPC SKU approaches. They also want a more nimble shopping experience that takes advantage of a more visual experience and better leverages smartphones as the point of sale device.
+
+The development and operations teams come back with a proposal to build out a pilot that uses image based object recognition AI/ML capbilities to quickly build models for identifying new products.  They propose a hybrid architecture with the Edge portion consisting of customers using a smartphone app to take pictures of store items they wish to purchase.  The pictures are run against an AI/ML image detection model running on an edge server or edge device in the store or kiosk.  An edge based pricing service then applies a price to the item for the customer to see.
+
+The models are built and trained on a cloud hosted or data center instance of OpenShift that is running OpenShift AI Platform. OpenShift Application Services are also used to build the services running on the edge and to link the data pipeline pieces, creating and moving the models to the edge based stores and kiosks.
+
+This lab is broken up into 2 main modules:
+
+* ML Ops -- This module takes users through building out a sample product AI/ML model for image detection of "tea."  A store based "Edge" application set of services then loads the model and allows users to test out the model on saved images.
+* Application Services and Development -- This module focuses on how to create and connect Edge based applications that operationalize deployed AI/ML models and apply business logic to solve business needs, such as identifying and pricing items.
+
+NOTE: This is an "Art of The Possible" lab and given the constraints on time and emphasis on exploring many topics, each student will be given a main project/workspace on the OpenShift cluster to create and deploy the artifacts needed for each Lab module.  In an actual real-world hybrid architecture, you would normally split the various services and development tooling across edge, data center, and cloud tiers.
+
+

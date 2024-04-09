@@ -1,0 +1,83 @@
+= MLOps - Jupyter Notebooks and TensorFlow Model Creation
+
+== Overview
+In this module you will load and run 3 python notebooks. Each one is annotated to describe what each python code cell is doing, and as you step through and run each cell the output for each cell will be displayed.  This experience is as somewhat typical user experience when running Jupyter notebooks.
+
+The 3 notebooks and what they do is as follows:
+
+* *redbag-base.ipynb*
+** Loads an initial public facing image model in the tensorflow framework
+** Walks you through running the model against a saved image and then saving the model with a Base64 signature in your workbench env
+* *redbag-custom.ipynb*
+** Builds a new image detection model for a new *product* that represents an image classifier deep network.
+** This will be done by applying various steps to implement transfer learning on top of an existing model.
+** The notebook then analyzes and tests the model.
+** The model is then saved for eventual use as an *operationalized model*.
+* *redbag-push-latest.ipynb*
+** This notebook takes the created model that was saved in your local workbench environment, and moves it into an S3 bucket.  In this case into the production bucket in MinIO, where it can be accessed by the client "Edge" application set.
+
+NOTE: The lab instructors will lead you through an overview of the approaches and steps to complete this module. Remember that this lab is an "Art of the Possible" lab to share some knowledge and prototyping techniques.
+
+== Starting Point
+Now that you are connected to your workbench and have cloned the lab project you should have the following view.
+
+[.bordershadow]
+image::01-04/initial-git-load-view.png[]
+
+== Load the  *redbag-base.ipynb* Notebook and Run a Model
+In your workbench:
+
+. In the left hand navigation menu, navigate to the folder called: `summit2024/repos/summit2024-lab2-edge-ai-lab2-edge/workbench/direct-approach`
+
+. Open the notebook called `redbag-base.ipynb`
++
+[.bordershadow]
+image::01-04/open-base-notebook.png[]
++
+. If you have never executed Cells in a Jupyter Notebook before, here is what you need to do:
+
+.. Click on the **Restart kernel** link:
++
+[.bordershadow]
+image::01-04/restart-kernel-toolbar.png[]
+.. Click **Restart** :
++
+[.bordershadow]
+image::01-04/restart-kernel-mbox.png[width=50%]
++
+. Run each cell, by repeatedly clicking on the **run cell** in the toolbar
+
+[.bordershadow]
+image::01-04/run-cell-notebook.png[width=50%]
+
+
+NOTE: As you click through the cells notice the markup comments indicating what is occuring in each section, and also note the output of each code section
+
+[.bordershadow]
+image::01-04/example-nb1-execution-view.png[]
+
+If the output of this notebook looks suspicious, please inform the people leading the lab.
+
+== Overall view
+
+This is a summarized visualization of how the environment is laid out.
+
+[.bordershadow]
+image::[]
+
+== Run The *redbag-custom.ipynb* to Create a Trained Model
+Now that you have run your first notebook against an existing model, it's time to open the *redbag-custom.ipynb* notebook and using the guidance for running the first notebook, step through the Transfer Learning approach.
+
+[.bordershadow]
+image::01-04/custom-model-nb-view.png[]
+
+NOTE: Again, the people leading the lab are going to present some enablement on these topics and walk you through completing this module.
+
+== Move the Trained model to an S3 Bucket *redbag-push-latest.ipynb*
+You can now go ahead and open the *redbag-push-latest.ipynb* notebook and run it. This will move the local model to an S3 bucket on MinIO and be available for the TensorFlow Serving service to load and use in the Edge application set.
+
+[.bordershadow]
+image::01-04/copy-to-S3-nb.png[]
+
+
+*Now let's invoke the model from an "Edge" application*

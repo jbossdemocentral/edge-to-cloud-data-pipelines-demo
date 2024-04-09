@@ -1,0 +1,124 @@
+= Shopper Application
+
+The main portal "customers" will enter to take pictures of products they want to purchase is the shopping application.
+
+As mentioned in the Lab Overview:
+
+*shopper* : The shopping application is a Red Hat Camel Quarkus application that provides a GUI for shoppers to take pictures or load pictures of items they want to purchase.  The web based frontend can run on computer or phone web browsers.  This service works with the other services on the edge to identify the product and offer a price back to the shopper.
+
+== Overview
+In this section you will complete the following tasks:
+
+* Deploy the existing end user Shopping Integration Application
+* Run a positive test with the existing deployed image detection model (known product).
+* Run a nagative test (unknown "new" product)
+* Discuss the need to train a new model focused on the new product.
+
+== View the *edge-shopper* project
+This is the shopping application
+
+* If you completed the last exercise, you need clean up your workspace by closing the files and moving one directory up to the *edge-shopper* folder
+
+[.bordershadow]
+image::02-03/01-reset-workspace.png[width=75%]
+
+* Right click on the edge-shopper folder and click *Open in Integrated Terminal*
+
+[.bordershadow]
+image::02-03/02-open-terminal.png[width=75%]
+
+* Looking at the terminal you should be in the edge-shopper directory and in your *{user}-lab2-edge* project
+
+[.bordershadow]
+image::02-03/03-confirm-set-locations.png[width=75%]
+
+* There are many ways to build and deploy applications onto Openshift.  In this exercise we are going to focus on the inner loop approach of a Java developer using mvn on the command line to build and deploy the Camel Quarkus application.
+
+Copy the follwing line into the terminal window and run it *Return/Enter*
+[.console-input]
+[source,adoc]
+[subs=attributes+]
+mvn clean package -DskipTests -Dquarkus.kubernetes.deploy=true
+
+[.bordershadow]
+image::02-03/04-mvn-build-deploy-edge-shopper.png[width=75%]
+
+* This approach is using mvn to download all the packages need to compile and package the application.  It will take several minutes the first time you run it, but after that all the dependency packages will be stored locally on your DevSpaces development container's storage.
+
+[.bordershadow]
+image::02-03/05-progress-wait-build-deploy.png[width=75%]
+
+* This particular approach is called a *binary S2i* or binary Source To Image approach.  The lab instructors will show other approaches that can be used from the graphical Console in OpenShift.
+
+* Since we created our workspaces directly from a github repository you could also have pushed the changes up to the repository and kicked off a web hook that would invoke a build on OpenShift or start a CI/CD pipeline that could include GitOps deployments.
+
+
+
+* When the initial packaging completes and the application is deployed to openshift, you need to create a route to expose an HTTP url to call the shopper application.  copy/paste the following code into the terminal window and hit Return/Enter.
+[.console-input]
+[source,adoc]
+[subs=attributes+]
+oc create route edge camel-edge --service shopper
+
+[.bordershadow]
+image::02-03/06-create-route-shopper.png[width=75%]
+
+* If you now switch back to the OpenShift Console tab on your browser, you should see the following Topology view.  
+
+[.bordershadow]
+image::02-03/07-topology-completed-layout.png[width=75%]
+
+* Open up the shopper web page Option 1
+
+[.bordershadow]
+image::02-03/08-open-shopper-url1.png[width=40%]
+
+* Open up the shopper web page Option 2
+
+[.bordershadow]
+image::02-03/09.2-composite-url.png[width=100%]
+
+* You may be asked to allow usage of your camera click *Allow*
+
+[.bordershadow]
+image::02-03/10-allow-camera.png[width=40%]
+
+* You should now see the main entry page to the application, Click *Enter Detection Mode*
+
+[.bordershadow]
+image::02-03/11-shopper-index-page.png[width=75%]
+
+* If we were using a multiple models of all products available or a general image detection algorithm we could take pictures or upload pictures of various items and see if they are identified properly.  The lab instructors will demonstrate this mode also.
+
+* For purposes of this exercise we have an initial model that has been trained to recognize tea, based upon the packing it is sold in the store or kiosk.
+
+* Click on *Pick from Device*
+
+[.bordershadow]
+image::02-03/12-Pick-from-Device.png[width=75%]
+
+* From the file selection choose *tea-earl-grey.jpg*
+
+[.bordershadow]
+image::02-03/13-choose-tea-earl-grey.png[width=75%]
+
+* You can choose to send this image either by MQTT IoT protocol or HTTP protocol:  From an application development perspective here is what one needs to consider.  This application would normally be running on an edge device in the store or kiosk, and from a far edge perspective customers would be using their phones to view the website and take pictures of items to buy. Therefore in many cases MQTT would be the preferred protocol to send the data back and forth between the consumers phone and the edge device/server running the edge application set in the store.
+
+[.bordershadow]
+image::02-03/14-choose-MQTT-or-HTTP.png[width=75%]
+
+* Since this model has been trained on this type of Tea it should be identified by the Model Server, after which the Pricing Engine ( the price-engine Camel K service we just looked at in the last section) returns a price for the product.
+
+[.bordershadow]
+image::02-03/15-positive-earl-grey.png[width=50%]
+
+* Pick another tea type.  This time pick *tea-bali.jpg*
+
+[.bordershadow]
+image::02-03/16-pick-tea-bali.png[width=75%]
+
+* Since Bali Tea (green tea) is not a current product being offered by the store
+
+[.bordershadow]
+image::02-03/17-negative-bali.png[width=50%]
+

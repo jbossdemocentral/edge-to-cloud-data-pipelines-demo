@@ -1,0 +1,215 @@
+NOTE: For purposes of the lab the lab instructors will demonstrate the full end to end capabilities of this approach.  The lab itself will focus on building and directly invoking the data pipeline and model building process, and each of you will then update your pricing engines for the new deployed product.
+
+In this section, each of you will:
+
+. Review some example images available of the new Bali Tea.
+. Review model training notebooks and an Elyra pipeline in Jupyter, running in your OpenShift AI workbench.
+. Create an OpenShift Tekton Pipeline from the Elyra pipeline
+. Deploy a Tekton pipeline trigger and webhook
+. Directly invoke the data pipeline model training process through the webhook.
+. Update the pricing engine in your {user}-lab2-edge project.
+. Test the shopping application to see if it recognizes the new product.
+
+NOTE:  Although the processing/training of models may seem to take some time, we are only using a small sample set of images for this lab to simplify setup and reduce waiting time for lab participants. In a real-world scenario you would be loading a lot more images for training and the overall prediction accuracy would increase.
+
+* First you need to log into Red Hat OpenShift AI
+** Starting at the upper left of the OCP Console Tab, click on the matrix menu and OpenShift AI menu item
+
+[.bordershadow]
+image::01-06/2-setup/01-ocpai-menu.png[width=75%]
+
+* Click to Enter the login screen
+
+[.bordershadow]
+image::01-06/2-setup/01.1-ocp-ai-splash.png[width=75%]
+
+* Enter your existing credentials
+** Your account id: `{user}`
+** Your password: `{password}`
+
+[.bordershadow]
+image::01-06/2-setup/02-ocp-ai-login.png[width=75%]
+
+* Click on Data Sciene Projects
+
+[.bordershadow]
+image::01-06/2-setup/03-ocp-ai-init-page.png[width=75%]
+
+* You will see your pre-created Data Science Project
+** Open your workbench by clicking on the link
+
+[.bordershadow]
+image::01-06/2-setup/04-ocpai-dsp.png[width=75%]
+
+* Log into your workbench using your existing user credentials
+
+[.bordershadow]
+image::01-06/2-setup/05-wb-login.png[width=75%]
+
+* The first time you log in you may need to *allow sected permissions*
+
+[.bordershadow]
+image::01-06/2-setup/06-allow-permissions.png[width=75%]
+
+
+* You will see the initial view of your Jupyter Environment
+** Jupyter is an editing and execution environment that allows data scientists and others to create "notebooks" of Python code, with text comments and graphics that together create an integrated coding and execution environement to create AI/ML models.
+
+[.bordershadow]
+image::01-06/3-jupyter/07-wb-initial-view.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/08-jupyter-git-clone.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/08.1-jupyter-git-clone.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/09-dir.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/09.1-dir.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/09.2-dir.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/09.3-dir.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/10-step2-nb.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/11-step2-nb.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/12-step3-nb.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/13-elyra-pipeline.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/13.1-elyra-pipeline.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/13.2-elyra-pipeline.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/13.3-elyra-pipeline.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/13.4-elyra-pipeline.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/13.4.1-elyra-pipeline.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/13.5-elyra-pipeline.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/13.6-elyra-pipeline.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/3-jupyter/13.7-elyra-retrain-yaml.png[width=75%]
+
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/14-ocp-pipelines.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/14.1-ocp-pipelines.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/14.2-ocp-pipelines.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/14.3-ocp-pipelines-retrain.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/14.4-ocp-pipelines-retrain.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/14.5-ocp-pipelines-retrain.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/14.6-ocp-pipelines.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/15-ocp-terminal-menu.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/15.1-ocp-terminal.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/15.2-ocp-terminal.png[width=75%]
+
+*
+
+[.bordershadow]
+image::01-06/4-ocp-pipelines/15.3-ocp-terminal.png[width=75%]
+
+http://minio-service.user1-lab2-edge.svc:9000
+
+** http://minio-service.{user}-lab1-apps.svc:9000/
+
+
+curl -v \
+-H 'content-Type: application/json' \
+-d '{"id-edge":"user1-lab2-edge"}' \
+http://el-train-model-listener.user1-lab2-ds.svc:8080

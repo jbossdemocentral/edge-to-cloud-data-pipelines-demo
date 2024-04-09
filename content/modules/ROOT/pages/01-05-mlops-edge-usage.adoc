@@ -1,0 +1,70 @@
+= MLOps - Edge Applications and Operationalizing the Model
+
+
+== Overview
+Now that you have created a model and made it available to be called by an application, it can be considered operational, and ready to solve business problems.
+
+NOTE: In this lab environment each user has all the Edge application services, and all the AI/ML model building/training pieces running in the same OpenShift project space.  In a real-world situation we would spread this environment out into a hybrid environment spanning edge devices, regional servers, data centers, and possible cloud based services.
+
+In our scenario, we have created a new model for a new product *green tea* that we want to quickly introduce into stores in regions where there is strong demand.
+
+In our "Art of the Possible" scenario for this lab, we are using an "edge" application to call the image detection model. The application is made up of the following services:
+
+* *shopper* : The shopping application is a Red Hat Camel Quarkus application that provides a GUI for shoppers to take pictures or load pictures of items they want to purchase.  The web based frontend can run on computer or phone web browsers.  This service works with the other services on the edge to identify the product and offer a price back to the shopper.
+* *tf-server* :  This is a containerized TensorFlow Serving engine.  In this Lab we are using TensorFlow as our AI framework to build and run models.  Although OpenShift AI supports many different frameworks and approaches.  The *tf-service* calls the deployed model you built that was pushed out to the production S3 Bucket.  This service provides *shopper* with image detection inferencing.
+* *price-engine* :  This service is a Red Hat CamelK service that is called by shopper to look up pricing for identified product pictures/images. It provides the business logic for making decisions on what the inferencing returns.
+* *broker-amq* : Red Hat AMQ Broker running MQTT protocol. This demo can be ramped up into many different configurations and topologies. In many true edge scenarios a message broker running MQTT protocol provides a powerful lightweight approach for IoT scenarios. (MQTT is designed as an extremely lightweight publish/subscribe messaging transport that is ideal for connecting remote devices with a small code footprint and minimal network bandwidth.)
+* *minio* : Thi is the same S3 storage you used to publish your model to in the last exercise.  *tf-server* will load and use new and updated models as they are moved into the production S3 bucket.
+
+NOTE: For purposes of supporting a large lab exercise the lab developers have simplified the layout.  Normally the "Edge" tier running the above services would be running on an edge device running on something like Red Hat Device Edge with MicroShift, or Red Hat Single Node Openshift.  The edge (kiosk, store, remote location) would have it's own S3 storage that receives new models and updated models from an MLOps lifecycle that supports GitOps approaches. The edge environment would be either disconnected or partially connected to a central data center or cloud environment where the model building, training, and monitoring occurs. The lab presentors will cover explanations and approaches for more real-world topologies.
+
+## Running the shopping application
+
+As mentioned in the *NOTES:* your {user}-mlops project in OpenShift will now contain all pieces for the end to end application. Normally we would spread these out across multiple hybrid cloud tiers.
+
+You project should look some similar to the following
+
+[.bordershadow]
+image::01-05/completed-topology-view.png[]
+
+== Test the Application
+
+* Locate the shopper deployment in the topology view in the Developer mode in OpenShift
+
+[.bordershadow]
+image::01-05/developer-view-userx-mlops.png[]
+
+* Hover over the icon in the upper right-hand corner and click OpenURL
+
+[.bordershadow]
+image::01-05/shopper-deployment.png[width=50%]
+
+* Your web browswer will load the entry page to the example shopping application.  
+** Click on *Enter Detection Mode*
+
+[.bordershadow]
+image::01-05/shopper-opening-main-view.png[]
+
+* Choose *Pick From Device*
+
+[.bordershadow]
+image::01-05/pick-from-device.png[width=50%]
+
+
+* Pick a tea image from the file selector as explained by your lab instructors.
+
+[.bordershadow]
+image::01-05/choose-tea.png[width=50%]
+
+* You will be taken back to the main detection screen
+** Click on *via HTTP* (transport type, later the lab instructors will show how to use MQTT IoT approaches)
+
+[.bordershadow]
+image::01-05/pick-http.png[width=50%]
+
+* If a price is present in the *price-engine* it will be flashed for a few seconds on the screen.  (If you conversely see N/A, then the image was not recognized as the new product).
+
+[.bordershadow]
+image::01-05/tea-price.png[width=50%]
+
+NOTE:  Since this lab is focused on how to introduce a new product, we are not loading additional models to be checked for other existing products.  We are focused on showing how business can support new product introdction using transfer learning.

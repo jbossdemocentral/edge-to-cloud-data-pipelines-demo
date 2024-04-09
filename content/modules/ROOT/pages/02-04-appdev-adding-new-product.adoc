@@ -1,0 +1,133 @@
+= Adding a New Product
+
+
+== Overview
+=== Use Case
+In this section you be adding a new product.  From our use case, the store or kiosk is being asked about other tea varieties by customers, or a new tea vendor has a new niche offering in high demand and the store/chain wants to quickly add it to certain locations.
+
+The vendor sends some marketing material, including lots of images of the new product, *Bali Tea (Green Tea)*, to be used in store marketing or for placement information on the store website.  The store takes additional pictures of the new product and the shopper app uploads all the images to an S3 data source on the near edge.  
+
+Then a camel service collects the images and kicks off a centralized data services pipeline which sends the images through a Red Hat Openshift Pipeline that runs an OpenShift AI set of Jupyter notebooks.  These notebooks carryout a transfer learning process on an existing model and a new model is created focused on adding the new tea. The updated model is then copied to the remote store/kiosks AI/ML model repository, Minio in this case.  The store also updates the pricing engine to add pricing for that new product.
+
+*This is a working "Art of The Possible" example of a data pipeline from the edge back to the cloud.*
+
+In this Lab section you will be invoking the pre-built set of services. In our lab environment those services are located on your {user}-lab2-ds project. and your store/kiosk edge project {user}-lab2-edge.
+
+
+include::partial$ocp-re-open-console.adoc[]
+
+=== Tasks
+* Ensure you are are in your *{user}-lab2-edge* project
+
+* Get a visual perspective of some of the training data *new product images*.
+** Open the Minio UI: http://minio-service.{user}-lab1-apps.svc:9000/
+*** Access Key ID: `{minio-user}`
+*** Secret Access ID: `{minio-pass}`
+
+* Navigate to the *data* bucket
+** Further navigate to the images/tea-green folder
+
+* View some of the images for the new tea: *bali-tea* *"green tea"*
+
+[.bordershadow]
+image::02-04/green-tea-s3-data.jpeg[width=75%]
+
+NOTE: These images were collected by attendees at a recent live demonstration of the larger end to end demo
+
+* You should be in the Developer Topology view in the OpenShift console and moving around the layout you should be familiar with many of the services and their role in the store edge application set.
+
+[.bordershadow]
+image::02-04/01-edge-prj-main-pieces.png[width=75%]
+
+TIP: A quick reminder: The existing model v1 you have been using with the shopping application does not know about this new type of tea, it only knows about Earl Grey Tea and Lemon Tea.
+
+* Use the _admin_ and _monitor_ web pages in the *shopping* app to initiate and follow the data pipeline flow from the near edge S3 storage, through the model retraining pipeline, and movement of the new AI/ML inference model out the edge to be picked up by the Model Server __tf-server__
+** Open the Shopping Application "Admin" Page
+** https://camel-edge-{user}-lab2-edge.apps.{openshift_cluster_ingress_domain}/[https://camel-edge-{user}-lab2-edge.apps.{openshift_cluster_ingress_domain}/]
+
+[.bordershadow]
+image::02-04/admin-screen-view.png[width=75%]
+
+** Click on the *Train* Button to initiate the pipeline flow.
+
+[.bordershadow]
+image::02-04/admin-screen-view2.png[width=75%]
+
+** The GUI will show the progress of the image movement and model training
+
+[.bordershadow]
+image::02-04/monitor-view.png[width=75%]
+
+** The entire execution of the pipeline may take between 2-5 minutes.
+
+[.bordershadow]
+image::02-04/monitor-view2.png[width=75%]
+
+* After the whole process completes, the new version of the model, trained to recognize the new tea type -- green-tea -- is pushed out to the store's "near" edge into the production bucket of the S3 storage, minio.
+
+TIP: You will use the shopping application here, just like you did in the previous section
+
+* Try out the shopping app again and see if it recognizes the new product.
+** In the Topology view of the OpenShift Console located the *shopper* deployment.
+* Open up the shopper web page.
+
+[.bordershadow]
+image::02-03/08-open-shopper-url1.png[width=40%]
+
+* Use the downloaded images from the previous section.
+
+https://github.com/RedHat-Middleware-Workshops/edge-to-cloud-pipelines-workshop/tree/main/test-images/[Test Images]
+
+* Click on *Pick from Device*
+
+[.bordershadow]
+image::02-03/12-Pick-from-Device.png[width=75%]
+
+* From the file selection choose *tea-bali.jpg* which is the __Green Tea__ we wanted to add to the store.
+
+* Pick either MQTT or HTTP protocol for transport 
+
+[.bordershadow]
+image::02-03/13-choose-tea-earl-grey.png[width=75%]
+
+* The Shopping service will call the Model Server *tf-server* and get the response that the tea is identified as green tea.
+* The Shopping service will next call the Price Engine *price-engine* and return the current price.
+
+
+=== Detailed Review of what is occuring in the flow
+NOTE: This review covers the main services and actions involved.  A more indepth explanation is available through the Red Hat Solution Pattern that will be shared in a later section.
+
+. After you click Train Data, you’ll see in the monitoring view a series of live animations illustrating the actions actually taking place in the platform. The following enumeration describes the process:
+
+. The click action triggers a signal that a Camel integration (Manager) picks up.
+
+. The Manager reads all the training data from the S3 bucket where it resides and packages it as a ZIP container.
+
+. The Manager invokes an API served from the Core Data Center (Central) to send the ZIP data.
+
+. The system Feeder (Camel) exposing the above requested API, unpacks the ZIP container and pushes the data to a central S3 service used as the storage system (ODF) for training new models.
+
+. The same system Feeder sends a signal via Kafka to announce the arrival of new training data to be processed.
+
+. The system Delivery (Camel) is subscribed to the announcements topic. It receives the Kafka signal and triggers the Pipeline responsible the create the a new model version.
+
+. The pipeline (Tekton) kicks off. It reads from the S3 storage system all the training data available and executes the Data Science notebooks based on TensorFlow
+
+. At the end of the pipeline process, a new model is pushed to an edge-dedicated topic where new model placed.
+
+. A copy of the new model version is also pushed to a Model repository. In this demo, just another S3 bucket, where a history of model versions is kept.
+
+. The end-to-end process is not done yet. It then enters into the Delivery phase. The new model has now been pushed to an S3 bucket edge1-ready that is being monitored by an integration point on the Edge (Manager)
+
+. When the Tekton pipeline uploads the new model to the S3 bucket, the Edge Manager notices the artifacts and initiates the download of the model and hot deploys it in the TensorFlow model server
+
+. The AI/ML engine, powered by the TensorFlow Model Server, reacts to the new version (v2), now available in its local S3 bucket, and initiates a hot-deployment. It loads the new version and discards the old one that was held in memory. This process happens without service interruption. Clients sending inference requests inadvertently start obtaining results computed with the new hot-deployed version (v2).
+
+NOTE: There is a follow-on lab exercise where you can work through the creation of an AI/ML pipeline implemented as an OpenShift Pipeline to get a deeper understanding of that critical part of a data pipeline.
+
+
+
+
+
+
+

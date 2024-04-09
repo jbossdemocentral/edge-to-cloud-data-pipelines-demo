@@ -1,0 +1,181 @@
+= Defining, Deploying, and Testing The Pricing Engine
+
+== Overview
+In this section you will investigate the existing pricing engine, deploy it, and then test it.  The pricing service aka *camel-price* service was introduced in the overview section for this lab.
+
+The approach taken in this lab is to implement a simple pricing engine using Red Hat CamelK, which is a lightweight cloud native integration and data transformation technology. It is one of the main implementations of the upstream Camel project.  It provides developers with over 200 pre-built connectors to message brokers, databases, etc.. One also has the ability to quickly implement REST services, and manipulate data packets and protocol headers in powerful ways.
+
+Red Hat CamelK implements these capabilities as "Routes," which can be written in most modern programming languages and also as xml and yaml syntax.  Red Hat is also investigating visual editors such as Kaoto to build routes.
+
+== Launching a DevSpaces Environment
+As mentioned in the Overview for the Lab, each user will need to use the Browser based IDE Red Hat DevSpaces. 
+
+Use the following steps to open a new DevSpaces instance and create a workspace for the lab github project.
+* Locate and Click on the DevSpaces menu item in OpenShift
+
+[.bordershadow]
+image::02-05/devspaces-menu-item.png[width=50%]
+
+* Click on the *Log in with OpenShift* button
+
+[.bordershadow]
+image::02-05/login-splash.png[width=75%]
+
+* The first time you log into OpenShift AI you will see a login splash screen, click on the login button and fill out your user login information.
+
+** Your account id: `{user}`
+** Your password: `{password}`
+
+[.bordershadow]
+image::02-05/devspace-login.png[width=75%]
+
+* The first time you login you will be asked to confirm authorization.  Click *Allow selected permissions*.
+
+[.bordershadow]
+image::02-05/dev-spaces-authorize.png[width=75%]
+
+* The first time you enter the DevSpaces IDE your view should be similar to the following.
+
+[.bordershadow]
+image::02-05/devspaces-initialview.png[width=75%]
+
+NOTE: You will now have a tab in your browser for OpenShift and a separate one for DevSpaces.
+
+== Reviewing The Current Pricing Engine
+
+Before we can review the current CamelK pricing engine you need to clone the content of our Git lab repository.
+
+** Enter the URL of the Git repo:
++
+[.console-input]
+[source,adoc]
+[subs=attributes+]
+{git-clone-repo-url}
+
+[.bordershadow]
+image::02-05/devspaces-load-gitrepo.png[width=75%]
+
+* It will take few minutes while the workspace loads the git repo and starts up.
+
+[.bordershadow]
+image::02-05/devspaces-starting-ws.png[width=75%]
+
+* You will be asked to click *Yes I trust the Authors*, click it.
+
+[.bordershadow]
+image::02-05/devspaces-trust-authors.png[width=75%]
+
+* You will be asked to click on a theme for the color layout for your devspaces view, click on one such as *Light Modern*
+
+[.bordershadow]
+image::02-05/devspaces-pick-visual-mode.png[width=75%]
+
+* When the Workspace fully opens, close the Welcome page.
+
+[.bordershadow]
+image::02-05/devspaces-close-welcome.png[width=75%]
+
+* You will now see the initial view of the loaded lab github project.
+
+[.bordershadow]
+image::02-05/camel-price/01-initial-loaded-github-prj.png[width=75%]
+
+* Unfold the explorer view of the project by clicking on the indicated folders in the explorer pane.
+    ** you should end up view the two files in the *camel-price* subdirectory
+
+[.bordershadow]
+image::02-05/camel-price/02-open-price-engine-files.png[width=75%]
+
+* You now need to create a command terminal to enter commands
+** Option 1 for opening a new terminal
+
+[.bordershadow]
+image::02-05/camel-price/03-create-terminal1.png[width=75%]
+
+** Option 2 for opening a new terminal.
+
+[.bordershadow]
+image::02-05/camel-price/04-create-terminal2.png[width=75%]
+
+* You should see a terminal window open in the bottom portion of the screen.
+
+[.bordershadow]
+image::02-05/camel-price/04.1-terminal-view.png[width=75%]
+
+* Confirm you are in the correct directory by entering *pwd* and hitting return/enter at the command prompt.
+
+[.bordershadow]
+image::02-05/camel-price/04.2-confirm-pwd-prj.png[width=75%]
+
+* Enter the following to switch to your project in OpenShift where you are building out your client application.
+[.console-input]
+[source,adoc]
+[subs=attributes+]
+oc project {user}-lab2-edge
+
+** Make sure to hit Enter afterwards
+
+[.bordershadow]
+image::02-05/camel-price/07-moveto-user-project.png[width=75%]
+
+* Note: you may get prompted to allow text to be copied into the cliboard, click *Allow*.
+
+[.bordershadow]
+image::02-05/camel-price/06-copy-paste-permission.png[width=75%]
+
+* Another view of the terminal
+
+[.bordershadow]
+image::02-05/camel-price/05-oc-project-terminal.png[width=75%]
+
+* We will now review the files that makeup the *camel-price* service
+** *catalogue.json* acts a simple listing of products and prices that is read by the CamelK route.  It will be converted into an OpenShift ConfigMap resource.
+** *price-engine.xml* is the simple CamelK component that is implemented as an xml Camel Route that reads the catalogue listing and loads it into memory.  It also exposes a REST endpoint that the shopping service can call to look up a price on an product identified by the model server.
+
+* You will be copying and pasting some multi-line commands.  The first time you do this you may be asked to confirm this.
+
+[.bordershadow]
+image::02-05/camel-price/08-copy-paste-warning-lines.png[width=75%]
+
+* Copy the following command in the terminal window and hit Return/Enter to run it.  This will take the catalogue file and convert it into a ConfigMap.
+
+[.console-input]
+[source,adoc]
+[subs=attributes+]
+oc create cm catalogue --from-file=catalogue.json
+
+[.bordershadow]
+image::02-05/camel-price/09-create-cm-price.png[width=75%]
+
+*  Now you can copy the following command to load and run the CamelK route in the OpenShift {user}-lab2-edge project
+[.console-input]
+[source,adoc]
+[subs=attributes+]
+kamel run price-engine.xml \
+--resource configmap:catalogue@/deployments/config
+
+[.bordershadow]
+image::02-05/camel-price/10-kamel-run-price-engine.png[width=75%]
+
+* Now you test the pricing engine directly by running a Curl command in the terminal window.
+
+[.console-input]
+[source,adoc]
+[subs=attributes+]
+curl \
+-H "item: tea-lemon" \
+http://price-engine-edge1.apps.{openshift_cluster_ingress_domain}/price
+
+* You should see output such as the following.
+
+[.bordershadow]
+image::02-05/camel-price/10.1-return-curl-price-engine.png[width=75%]
+
+
+* At this point you can back up to the browser tabs and click on the OpenShift Console tab to view the project with the price-engine running as a service.
+
+[.bordershadow]
+image::02-05/camel-price/11-final-topology.png[width=75%]
+
+
+
